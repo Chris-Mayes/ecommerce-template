@@ -78,9 +78,10 @@
 }
 
 .nav-banner {
-    height: 10rem; /* Maintain the height as previously set */
+    position: relative;
+    height: 20rem;
     display: flex;
-    justify-content: left;
-    align-items: flex-start; /* Align items to the top */
-    padding-top: 0px; /* Optionally add some padding to the top */
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-top: 0;
 }
