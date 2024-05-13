@@ -14,9 +14,11 @@
         --popover: 0 0% 100%;
         --popover-foreground: 222.2 84% 4.9%;
 
-        /* banner */
-        --primary: 206, 100%, 42%;
+        /* banner/buttons */
+        --primary: 220, 60%, 32%;
         --primary-foreground: 210 40% 98%;
+
+        --primary-hover: 206, 100%, 37%;
 
         --secondary: 210 40% 96.1%;
         --secondary-foreground: 222.2 47.4% 11.2%;
@@ -84,4 +86,23 @@
     justify-content: flex-start;
     align-items: flex-start;
     padding-top: 0;
+}
+
+/* Custom styles if needed */
+.nav-link::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px; /* Thicker line */
+    background-color: white; /* White color */
+    transition: width 0.3s ease-in-out;
+}
+
+.nav-link:hover::before,
+.nav-link:focus-visible::before,
+.nav-link.active::before {
+    width: 75%; /* Doesn't extend fully to each end */
 }
