@@ -28,7 +28,7 @@ export function ProductCard({
 }: ProductCardProps) {
     return (
         <Card className="flex overflow-hidden flex-col">
-            <div className="relative w-full h-auto aspect-video">
+            <div className="relative w-full aspect-w-1 aspect-h-1">
                 <Image src={imagePath} fill alt={name} />
             </div>
             <CardHeader>
@@ -41,9 +41,12 @@ export function ProductCard({
                 <p className="line-clamp-4">{description}</p>
             </CardContent>
             <CardFooter>
-                <Button asChild size="lg" className="w-full">
-                    <Link href={`/products/${id}/purchase`}>Purchase</Link>
+                <Button asChild size="lg" className="w-full --primary-buttons">
+                    <Link href={`/products/${id}/product`}>Configure</Link>
                 </Button>
+                {/* <Button asChild size="lg" className="w-full --primary-buttons">
+                    <Link href={`/products/${id}/purchase`}>Purchase</Link>
+                </Button> */}
             </CardFooter>
         </Card>
     );

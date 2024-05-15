@@ -22,6 +22,9 @@ const config = {
             fontFamily: {
                 sans: ["var(--font-sans)", ...fontFamily.sans],
             },
+            height: {
+                "112": "28rem",
+            },
             colors: {
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
@@ -32,6 +35,7 @@ const config = {
                     DEFAULT: "hsl(var(--primary))",
                     foreground: "hsl(var(--primary-foreground))",
                     hover: "hsl(var(--primary-hover))",
+                    buttons: "hsl(var(--primary-buttons))",
                 },
                 secondary: {
                     DEFAULT: "hsl(var(--secondary))",
@@ -79,7 +83,10 @@ const config = {
             },
         },
     },
-    plugins: [require("tailwindcss-animate")],
+    plugins: [
+        require("tailwindcss-animate"),
+        require("@tailwindcss/aspect-ratio"),
+    ],
 } satisfies Config;
 
 export default config;
