@@ -40,13 +40,13 @@ const stripePromise = loadStripe(
 export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
-            <div className="flex gap-4 items-center">
-                <div className="aspect-video flex-shrink-0 w-1/3 relative">
+            <div className="flex gap-5 pt-8 pb-8 items-center">
+                <div className="relative w-1/4 h-56">
                     <Image
                         src={product.imagePath}
-                        fill
+                        layout="fill"
+                        objectFit="contain"
                         alt={product.name}
-                        className="object-cover"
                     />
                 </div>
                 <div>
