@@ -1,24 +1,43 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
-import { useState } from "react";
 import { addProduct, updateProduct } from "../../_actions/products";
 import { useFormState, useFormStatus } from "react-dom";
-import { Product } from "@prisma/client";
+import { Product, Colour } from "@prisma/client";
 import Image from "next/image";
 
-export function ProductForm({ product }: { product?: Product | null }) {
+type ProductWithColours = Product & {
+    colours: Colour[];
+};
+
+export function ProductForm({
+    product,
+}: {
+    product?: ProductWithColours | null;
+}) {
     const [error, action] = useFormState(
         product == null ? addProduct : updateProduct.bind(null, product.id),
         {}
     );
-    const [priceInPence, setpriceInPence] = useState<number | undefined>(
+    const [priceInPence, setPriceInPence] = useState<number | undefined>(
         product?.priceInPence
     );
+    const [colours, setColours] = useState<string[]>(
+        product?.colours?.map((c) => c.name) || []
+    );
+    const [newColour, setNewColour] = useState<string>("");
+
+    const addColour = () => {
+        if (newColour && !colours.includes(newColour)) {
+            setColours([...colours, newColour]);
+            setNewColour("");
+        }
+    };
 
     return (
         <form action={action} className="space-y-8">
@@ -44,7 +63,7 @@ export function ProductForm({ product }: { product?: Product | null }) {
                     required
                     value={priceInPence}
                     onChange={(e) =>
-                        setpriceInPence(Number(e.target.value) || undefined)
+                        setPriceInPence(Number(e.target.value) || undefined)
                     }
                 />
                 <div className="text-muted-foreground">
@@ -103,6 +122,48 @@ export function ProductForm({ product }: { product?: Product | null }) {
                     <div className="text-destructive">{error.image}</div>
                 )}
             </div>
+            <div className="space-y-2">
+                <Label htmlFor="colours">Colours</Label>
+                <div className="flex space-x-2">
+                    <Input
+                        type="text"
+                        id="colours"
+                        name="colours"
+                        value={newColour}
+                        onChange={(e) => setNewColour(e.target.value)}
+                    />
+                    <Button type="button" onClick={addColour}>
+                        Add Colour
+                    </Button>
+                </div>
+                <div className="space-y-2">
+                    {colours.map((colour, index) => (
+                        <div
+                            key={index}
+                            className="flex items-center space-x-2"
+                        >
+                            <span>{colour}</span>
+                            <Button
+                                type="button"
+                                onClick={() =>
+                                    setColours(
+                                        colours.filter((c) => c !== colour)
+                                    )
+                                }
+                            >
+                                Remove
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+                {/* Hidden input to pass colours */}
+                <input
+                    type="hidden"
+                    name="colours"
+                    value={JSON.stringify(colours)}
+                />
+            </div>
+
             <SubmitButton />
         </form>
     );

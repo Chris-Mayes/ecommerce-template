@@ -17,6 +17,14 @@ const addSchema = z.object({
     priceInPence: z.coerce.number().int().min(1),
     file: fileSchema.refine((file) => file.size > 0, "Required"),
     image: imageSchema.refine((file) => file.size > 0, "Required"),
+    colours: z.string().refine((val) => {
+        try {
+            JSON.parse(val);
+            return true;
+        } catch {
+            return false;
+        }
+    }, "Invalid colours format"),
 });
 
 export async function addProduct(prevState: unknown, formData: FormData) {
@@ -26,6 +34,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     }
 
     const data = result.data;
+    const colours = JSON.parse(data.colours);
 
     await fs.mkdir("products", { recursive: true });
     const filePath = `products/${crypto.randomUUID()}-${data.file.name}`;
@@ -38,7 +47,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
         Buffer.from(await data.image.arrayBuffer())
     );
 
-    await db.product.create({
+    const product = await db.product.create({
         data: {
             isAvailableForPurchase: false,
             name: data.name,
@@ -48,6 +57,15 @@ export async function addProduct(prevState: unknown, formData: FormData) {
             imagePath,
         },
     });
+
+    for (const colour of colours) {
+        await db.colour.create({
+            data: {
+                name: colour,
+                productId: product.id,
+            },
+        });
+    }
 
     revalidatePath("/");
     revalidatePath("/products");
@@ -71,6 +89,7 @@ export async function updateProduct(
     }
 
     const data = result.data;
+    const colours = JSON.parse(data.colours);
     const product = await db.product.findUnique({ where: { id } });
 
     if (product == null) return notFound();
@@ -105,6 +124,16 @@ export async function updateProduct(
             imagePath,
         },
     });
+
+    await db.colour.deleteMany({ where: { productId: id } });
+    for (const colour of colours) {
+        await db.colour.create({
+            data: {
+                name: colour,
+                productId: id,
+            },
+        });
+    }
 
     revalidatePath("/");
     revalidatePath("/products");

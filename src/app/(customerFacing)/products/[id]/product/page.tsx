@@ -1,6 +1,7 @@
 import db from "@/db/db";
 import { notFound } from "next/navigation";
 import { Button } from "../../../../../components/ui/button";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import Image from "next/image";
 import { formatCurrency } from "@/lib/formatters";
@@ -10,7 +11,10 @@ export default async function ProductPage({
 }: {
     params: { id: string };
 }) {
-    const product = await db.product.findUnique({ where: { id } });
+    const product = await db.product.findUnique({
+        where: { id },
+        include: { colours: true }, // Include colours in the query
+    });
     if (product == null) return notFound();
 
     return (
@@ -35,9 +39,20 @@ export default async function ProductPage({
                         <p className="mb-2">{product.description}</p>
                     </div>
                     <div className="mt-auto pb-4">
-                        <p className="text-lg font-semibold mb-4">
-                            Add size info
-                        </p>
+                        <div className="mb-4">
+                            <Label htmlFor="colour">Colour</Label>
+                            <select
+                                id="colour"
+                                name="colour"
+                                className="block w-full mt-1"
+                            >
+                                {product.colours.map((colour) => (
+                                    <option key={colour.id} value={colour.name}>
+                                        {colour.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         <p className="text-lg font-semibold mb-4">
                             {formatCurrency(product.priceInPence / 100)}
                         </p>
