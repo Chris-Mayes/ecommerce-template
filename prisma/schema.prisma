@@ -17,6 +17,9 @@ model Product {
   filePath               String
   imagePath              String
   description            String
+  lengthInMm             Int
+  widthInMm              Int
+  heightInMm             Int
   isAvailableForPurchase Boolean   @default(true)
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt

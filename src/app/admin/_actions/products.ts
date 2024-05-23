@@ -15,6 +15,9 @@ const addSchema = z.object({
     name: z.string().min(1),
     description: z.string().min(1),
     priceInPence: z.coerce.number().int().min(1),
+    lengthInMm: z.coerce.number().int().min(1),
+    widthInMm: z.coerce.number().int().min(1),
+    heightInMm: z.coerce.number().int().min(1),
     file: fileSchema.refine((file) => file.size > 0, "Required"),
     image: imageSchema.refine((file) => file.size > 0, "Required"),
     colours: z.string().refine((val) => {
@@ -53,6 +56,9 @@ export async function addProduct(prevState: unknown, formData: FormData) {
             name: data.name,
             description: data.description,
             priceInPence: data.priceInPence,
+            lengthInMm: data.lengthInMm,
+            widthInMm: data.widthInMm,
+            heightInMm: data.heightInMm,
             filePath,
             imagePath,
         },
@@ -122,6 +128,9 @@ export async function updateProduct(
             priceInPence: data.priceInPence,
             filePath,
             imagePath,
+            lengthInMm: data.lengthInMm,
+            widthInMm: data.widthInMm,
+            heightInMm: data.heightInMm,
         },
     });
 
