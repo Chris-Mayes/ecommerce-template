@@ -10,11 +10,18 @@ export default async function PurchasePage({
 }: {
     params: { id: string };
 }) {
-    const product = await db.product.findUnique({ where: { id } });
+    //we want to get the ID from the last form and use it to get the configured product that we created. The configured product id needs to be passed from the purchase page instead of the product id which is what we currently pass.
+
+    const configproduct = await db.configuredProduct.findUnique({ where: { id } })
+    if (configproduct == null) return notFound();
+    let val = configproduct.productId
+    const product = await db.product.findUnique({ where: { id: val } })
+    
     if (product == null) return notFound();
+    
 
     const paymentIntent = await stripe.paymentIntents.create({
-        amount: product.priceInPence,
+        amount: product.priceInPence * configproduct.purchasequantity,
         currency: "GBP",
         metadata: { productId: product.id },
     });
@@ -25,6 +32,7 @@ export default async function PurchasePage({
 
     return (
         <CheckoutForm
+            configproduct={configproduct}
             product={product}
             clientSecret={paymentIntent.client_secret}
         />
