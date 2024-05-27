@@ -25,6 +25,18 @@ export default async function SuccessPage({
 
     const isSuccess = paymentIntent.status === "succeeded";
 
+
+if(isSuccess)
+    {const id = product.id
+        await db.product.update({
+            where: { id },
+            data: {
+                availablequantity: product.availablequantity - 1
+            },
+        });}
+
+
+
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
             <h1 className="text-4xl font-bold">

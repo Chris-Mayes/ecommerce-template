@@ -1,5 +1,4 @@
 "use client";
-
 import { userOrderExists } from "@/app/actions/orders";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +22,14 @@ import Image from "next/image";
 import { FormEvent, useState } from "react";
 
 type CheckoutFormProps = {
+    configproduct:{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        purchasequantity: number;
+        productId: string;
+        Colour:string;
+    };
     product: {
         id: string;
         imagePath: string;
@@ -37,7 +44,7 @@ const stripePromise = loadStripe(
     process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
 );
 
-export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
+export function CheckoutForm({ product,configproduct, clientSecret }: CheckoutFormProps) {
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
             <div className="flex gap-5 pt-8 pb-8 items-center">
@@ -51,17 +58,23 @@ export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
                 </div>
                 <div>
                     <div className="text-lg">
-                        {formatCurrency(product.priceInPence / 100)}
+                        {formatCurrency(product.priceInPence * configproduct.purchasequantity / 100)}
                     </div>
                     <h1 className="text-2xl font-bold">{product.name}</h1>
                     <div className="line-clamp-3 text-muted-foreground">
                         {product.description}
                     </div>
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Quantity: {configproduct.purchasequantity}
+                    </div>
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Colour: {configproduct.Colour}
+                    </div>
                 </div>
             </div>
             <Elements options={{ clientSecret }} stripe={stripePromise}>
                 <Form
-                    priceInPence={product.priceInPence}
+                    priceInPence={product.priceInPence * configproduct.purchasequantity}
                     productId={product.id}
                 />
             </Elements>
@@ -112,12 +125,15 @@ function Form({
                     error.type === "validation_error"
                 ) {
                     setErrorMessage(error.message);
-                } else {
-                    setErrorMessage("An unknown error occurred");
+                }
+                 else {
+                    setErrorMessage(error.message);
                 }
             })
             .finally(() => setIsLoading(false));
     }
+
+
 
     return (
         <form onSubmit={handleSubmit}>

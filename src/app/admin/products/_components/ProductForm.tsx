@@ -27,6 +27,9 @@ export function ProductForm({
     const [priceInPence, setPriceInPence] = useState<number | undefined>(
         product?.priceInPence
     );
+    const [availablequantity, setQuantity] = useState<number | undefined>(
+        product?.availablequantity
+    );
     const [colours, setColours] = useState<string[]>(
         product?.colours?.map((c) => c.name) || []
     );
@@ -130,6 +133,19 @@ export function ProductForm({
                     value={heightInMm}
                     onChange={(e) =>
                         setHeightInMm(Number(e.target.value) || undefined)
+                    }
+                />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="availablequantity">Available Quantity</Label>
+                <Input
+                    type="number"
+                    id="availablequantity"
+                    name="availablequantity"
+                    required
+                    value={availablequantity}
+                    onChange={(e) =>
+                        setQuantity(Number(e.target.value) || undefined)
                     }
                 />
             </div>
