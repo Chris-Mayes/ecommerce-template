@@ -31,7 +31,7 @@ export default async function SuccessPage({
                 {isSuccess ? "Success!" : "Error!"}
             </h1>
             <div className="flex gap-4 items-center">
-                <div className="aspect-video flex-shrink-0 w-1/3 relative">
+                <div className="relative w-1/4 h-64">
                     <Image
                         src={product.imagePath}
                         fill
