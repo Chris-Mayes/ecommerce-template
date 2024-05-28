@@ -1,9 +1,9 @@
+// app/products/[id]/page.tsx
+
 import db from "@/db/db";
 import { notFound } from "next/navigation";
-import { Button } from "../../../../../components/ui/button";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
 import Image from "next/image";
+import ProductPurchaseForm from "../../../../../components/ProductPurchasePage";
 import { formatCurrency } from "@/lib/formatters";
 
 export default async function ProductPage({
@@ -41,11 +41,15 @@ export default async function ProductPage({
                         <p>&#x2022; Length: {product.lengthInMm}</p>
                         <p>&#x2022; Width: {product.widthInMm}</p>
                         <p>&#x2022; Height: {product.heightInMm}</p>
+                        <p>
+                            Available Quantity: {product.availableQuantity}
+                        </p>{" "}
+                        {/* Add this line */}
                     </div>
 
                     <div className="mt-auto pb-4">
                         <div className="mb-4">
-                            <Label htmlFor="colour">Colour</Label>
+                            <label htmlFor="colour">Colour</label>
                             <select
                                 id="colour"
                                 name="colour"
@@ -61,15 +65,10 @@ export default async function ProductPage({
                         <p className="text-lg font-semibold mb-4">
                             {formatCurrency(product.priceInPence / 100)}
                         </p>
-                        <Button
-                            asChild
-                            size="lg"
-                            className="w-auto max-w-xs self-start --primary-buttons"
-                        >
-                            <Link href={`/products/${id}/purchase`}>
-                                Purchase
-                            </Link>
-                        </Button>
+                        <ProductPurchaseForm
+                            productId={id}
+                            productPrice={product.priceInPence}
+                        />
                     </div>
                 </div>
             </div>

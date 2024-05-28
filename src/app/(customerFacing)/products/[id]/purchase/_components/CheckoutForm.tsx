@@ -1,6 +1,8 @@
+// components/CheckoutForm.tsx
+
 "use client";
 
-import { userOrderExists } from "@/app/actions/orders";
+// import { userOrderExists } from "@/app/actions/orders";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -31,13 +33,18 @@ type CheckoutFormProps = {
         description: string;
     };
     clientSecret: string;
+    quantity: number;
 };
 
 const stripePromise = loadStripe(
     process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
 );
 
-export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
+export function CheckoutForm({
+    product,
+    clientSecret,
+    quantity,
+}: CheckoutFormProps) {
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
             <div className="flex gap-5 pt-8 pb-8 items-center">
@@ -51,7 +58,9 @@ export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
                 </div>
                 <div>
                     <div className="text-lg">
-                        {formatCurrency(product.priceInPence / 100)}
+                        {formatCurrency(
+                            (product.priceInPence * quantity) / 100
+                        )}
                     </div>
                     <h1 className="text-2xl font-bold">{product.name}</h1>
                     <div className="line-clamp-3 text-muted-foreground">
@@ -63,6 +72,7 @@ export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
                 <Form
                     priceInPence={product.priceInPence}
                     productId={product.id}
+                    quantity={quantity}
                 />
             </Elements>
         </div>
@@ -72,9 +82,11 @@ export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
 function Form({
     priceInPence,
     productId,
+    quantity,
 }: {
     priceInPence: number;
     productId: string;
+    quantity: number;
 }) {
     const stripe = useStripe();
     const elements = useElements();
@@ -89,15 +101,15 @@ function Form({
 
         setIsLoading(true);
 
-        const orderExists = await userOrderExists(email, productId);
+        // const orderExists = await userOrderExists(email, productId);
 
-        if (orderExists) {
-            setErrorMessage(
-                "You have already purchased this product. Try downloading it from the My Orders page"
-            );
-            setIsLoading(false);
-            return;
-        }
+        // if (orderExists) {
+        //     setErrorMessage(
+        //         "You have already purchased this product. Try downloading it from the My Orders page"
+        //     );
+        //     setIsLoading(false);
+        //     return;
+        // }
 
         stripe
             .confirmPayment({
@@ -149,7 +161,7 @@ function Form({
                         {isLoading
                             ? "Purchasing..."
                             : `Purchase - ${formatCurrency(
-                                  priceInPence / 100
+                                  (priceInPence * quantity) / 100
                               )}`}
                     </Button>
                 </CardFooter>

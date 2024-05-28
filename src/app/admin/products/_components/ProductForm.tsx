@@ -27,6 +27,9 @@ export function ProductForm({
     const [priceInPence, setPriceInPence] = useState<number | undefined>(
         product?.priceInPence
     );
+    const [availableQuantity, setAvailableQuantity] = useState<
+        number | undefined
+    >(product?.availableQuantity);
     const [colours, setColours] = useState<string[]>(
         product?.colours?.map((c) => c.name) || []
     );
@@ -211,7 +214,21 @@ export function ProductForm({
                     value={JSON.stringify(colours)}
                 />
             </div>
-
+            <div className="space-y-2">
+                <Label htmlFor="availableQuantity">Available Quantity</Label>
+                <Input
+                    type="number"
+                    id="availableQuantity"
+                    name="availableQuantity"
+                    required
+                    value={availableQuantity}
+                    onChange={(e) =>
+                        setAvailableQuantity(
+                            Number(e.target.value) || undefined
+                        )
+                    }
+                />
+            </div>
             <SubmitButton />
         </form>
     );

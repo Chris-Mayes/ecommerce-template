@@ -21,9 +21,10 @@ model Product {
   widthInMm              Int
   heightInMm             Int
   isAvailableForPurchase Boolean   @default(true)
+  availableQuantity      Int
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
-  orders                 Order[]
+  orders                 OrderItem[]
   downloadVerifications  DownloadVerification[]
   colours                Colour[]
 }
@@ -37,15 +38,24 @@ model User {
 }
 
 model Order {
-  id               String   @id @default(uuid())
-  pricePaidInPence Int
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
+  id        String       @id @default(uuid())
   userId    String
-  productId String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @default(now())
+}
+
+model OrderItem {
+  id               String   @id @default(uuid())
+  quantity         Int
+  priceInPence     Int
+  productId        String
+  orderId          String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
 }
 
 model DownloadVerification {
