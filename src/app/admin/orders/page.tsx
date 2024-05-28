@@ -1,5 +1,3 @@
-// orders/page.tsx
-
 import {
     Table,
     TableBody,
@@ -31,7 +29,7 @@ async function getOrders() {
                     product: { select: { name: true } },
                     quantity: true,
                     priceInPence: true,
-                    colour: true, // Include colour
+                    colour: true,
                 },
             },
             createdAt: true,

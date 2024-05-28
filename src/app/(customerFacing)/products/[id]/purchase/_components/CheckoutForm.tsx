@@ -1,5 +1,3 @@
-// components/CheckoutForm.tsx
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -33,7 +31,7 @@ type CheckoutFormProps = {
     };
     clientSecret: string;
     quantity: number;
-    colour: string; // Add colour here
+    colour: string;
 };
 
 const stripePromise = loadStripe(
@@ -44,7 +42,7 @@ export function CheckoutForm({
     product,
     clientSecret,
     quantity,
-    colour, // Add colour here
+    colour,
 }: CheckoutFormProps) {
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
@@ -74,7 +72,7 @@ export function CheckoutForm({
                     priceInPence={product.priceInPence}
                     productId={product.id}
                     quantity={quantity}
-                    colour={colour} // Pass colour to Form
+                    colour={colour}
                 />
             </Elements>
         </div>
@@ -85,12 +83,12 @@ function Form({
     priceInPence,
     productId,
     quantity,
-    colour, // Add colour here
+    colour,
 }: {
     priceInPence: number;
     productId: string;
     quantity: number;
-    colour: string; // Add colour here
+    colour: string;
 }) {
     const stripe = useStripe();
     const elements = useElements();

@@ -1,5 +1,3 @@
-// components/ProductPurchaseForm.tsx
-
 "use client";
 
 import { useState } from "react";
@@ -28,16 +26,9 @@ export default function ProductPurchaseForm({
     const [quantity, setQuantity] = useState(1);
     const [colour, setColour] = useState(colours[0]?.name || "");
 
-    const handleQuantityChange = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const value = parseInt(event.target.value);
+    const handleQuantityChange = (value: number) => {
         if (value > 0 && value <= availableQuantity) {
             setQuantity(value);
-        } else if (value > availableQuantity) {
-            setQuantity(availableQuantity);
-        } else {
-            setQuantity(1);
         }
     };
 
@@ -50,29 +41,51 @@ export default function ProductPurchaseForm({
     const isAvailable = availableQuantity > 0;
 
     return (
-        <div>
+        <div className="space-y-4">
             <div className="mb-4">
-                <Label htmlFor="quantity">Quantity</Label>
-                <input
-                    type="number"
-                    id="quantity"
-                    name="quantity"
-                    value={quantity}
-                    onChange={handleQuantityChange}
-                    className="block w-full mt-1"
-                    min="1"
-                    max={availableQuantity}
-                    disabled={!isAvailable}
-                />
+                <Label
+                    htmlFor="quantity"
+                    className="block text-sm font-medium text-gray-700"
+                ></Label>
+                <div className="flex items-center space-x-2">
+                    <button
+                        type="button"
+                        onClick={() => handleQuantityChange(quantity - 1)}
+                        className="px-3 py-2 border border-gray-300 rounded-l-md shadow-sm bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={!isAvailable || quantity <= 1}
+                    >
+                        -
+                    </button>
+                    <div
+                        className="block w-16 text-center mt-1 px-3 py-2 border-t border-b border-gray-300 shadow-sm bg-white sm:text-sm"
+                        style={{ pointerEvents: "none" }}
+                    >
+                        {quantity}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => handleQuantityChange(quantity + 1)}
+                        className="px-3 py-2 border border-gray-300 rounded-r-md shadow-sm bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={!isAvailable || quantity >= availableQuantity}
+                    >
+                        +
+                    </button>
+                </div>
             </div>
             <div className="mb-4">
-                <Label htmlFor="colour">Colour</Label>
+                <Label
+                    htmlFor="colour"
+                    className="block text-sm font-medium text-gray-700"
+                >
+                    Colour
+                </Label>
                 <select
                     id="colour"
                     name="colour"
-                    disabled={!isAvailable}
+                    value={colour}
                     onChange={handleColourChange}
-                    className="block w-full mt-1"
+                    disabled={!isAvailable}
+                    className="block w-1/2 mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 >
                     {colours.map((colour) => (
                         <option key={colour.id} value={colour.name}>
