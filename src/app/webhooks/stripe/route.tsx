@@ -1,8 +1,6 @@
-// route.tsx
-
-import db from "@/db/db";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import db from "@/db/db";
 import { Resend } from "resend";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
@@ -91,7 +89,6 @@ export async function POST(req: NextRequest) {
                 const order = user.orders[0];
                 console.log(`Created order: ${JSON.stringify(order)}`);
 
-                // Optionally, send a confirmation email
                 // await resend.emails.send({
                 //     from: `Support <${process.env.SENDER_EMAIL}>`,
                 //     to: email,
@@ -120,3 +117,9 @@ export async function POST(req: NextRequest) {
         return new NextResponse("Webhook handler failed", { status: 500 });
     }
 }
+
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};

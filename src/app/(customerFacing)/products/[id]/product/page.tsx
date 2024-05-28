@@ -13,9 +13,18 @@ export default async function ProductPage({
 }) {
     const product = await db.product.findUnique({
         where: { id },
-        include: { colours: true }, // Include colours in the query
+        include: { colours: true },
     });
-    if (product == null) return notFound();
+
+    if (!product) return notFound();
+
+    const serializableProduct = {
+        ...product,
+        colours: product.colours.map((colour) => ({
+            id: colour.id,
+            name: colour.name,
+        })),
+    };
 
     return (
         <div className="p-4 max-w-5xl pt-20 mx-auto">
@@ -45,27 +54,14 @@ export default async function ProductPage({
                     </div>
 
                     <div className="mt-auto pb-4">
-                        {/* <div className="mb-4">
-                            <label htmlFor="colour">Colour</label>
-                            <select
-                                id="colour"
-                                name="colour"
-                                className="block w-full mt-1"
-                            >
-                                {product.colours.map((colour) => (
-                                    <option key={colour.id} value={colour.name}>
-                                        {colour.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div> */}
                         <p className="text-lg font-semibold mb-4">
                             {formatCurrency(product.priceInPence / 100)}
                         </p>
                         <ProductPurchaseForm
                             productId={id}
                             productPrice={product.priceInPence}
-                            colours={product.colours} // Pass colours to the form
+                            colours={serializableProduct.colours}
+                            availableQuantity={product.availableQuantity}
                         />
                     </div>
                 </div>

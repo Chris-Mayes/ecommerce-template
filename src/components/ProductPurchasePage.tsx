@@ -16,12 +16,14 @@ interface ProductPurchaseFormProps {
     productId: string;
     productPrice: number;
     colours: Colour[];
+    availableQuantity: number;
 }
 
 export default function ProductPurchaseForm({
     productId,
     productPrice,
     colours,
+    availableQuantity,
 }: ProductPurchaseFormProps) {
     const [quantity, setQuantity] = useState(1);
     const [colour, setColour] = useState(colours[0]?.name || "");
@@ -30,8 +32,12 @@ export default function ProductPurchaseForm({
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         const value = parseInt(event.target.value);
-        if (value > 0) {
+        if (value > 0 && value <= availableQuantity) {
             setQuantity(value);
+        } else if (value > availableQuantity) {
+            setQuantity(availableQuantity);
+        } else {
+            setQuantity(1);
         }
     };
 
@@ -40,6 +46,8 @@ export default function ProductPurchaseForm({
     ) => {
         setColour(event.target.value);
     };
+
+    const isAvailable = availableQuantity > 0;
 
     return (
         <div>
@@ -53,6 +61,8 @@ export default function ProductPurchaseForm({
                     onChange={handleQuantityChange}
                     className="block w-full mt-1"
                     min="1"
+                    max={availableQuantity}
+                    disabled={!isAvailable}
                 />
             </div>
             <div className="mb-4">
@@ -60,6 +70,7 @@ export default function ProductPurchaseForm({
                 <select
                     id="colour"
                     name="colour"
+                    disabled={!isAvailable}
                     onChange={handleColourChange}
                     className="block w-full mt-1"
                 >
@@ -73,17 +84,27 @@ export default function ProductPurchaseForm({
             <p className="text-lg font-semibold mb-4">
                 {`Total: £${((productPrice * quantity) / 100).toFixed(2)}`}
             </p>
-            <Button
-                asChild
-                size="lg"
-                className="w-auto max-w-xs self-start --primary-buttons"
-            >
-                <Link
-                    href={`/products/${productId}/purchase?quantity=${quantity}&colour=${colour}`}
+            {isAvailable ? (
+                <Button
+                    asChild
+                    size="lg"
+                    className="w-auto max-w-xs self-start --primary-buttons"
                 >
-                    Purchase
-                </Link>
-            </Button>
+                    <Link
+                        href={`/products/${productId}/purchase?quantity=${quantity}&colour=${colour}`}
+                    >
+                        Purchase
+                    </Link>
+                </Button>
+            ) : (
+                <Button
+                    size="lg"
+                    className="w-auto max-w-xs self-start --primary-buttons"
+                    disabled
+                >
+                    Unavailable
+                </Button>
+            )}
         </div>
     );
 }

@@ -20,6 +20,13 @@ export default async function PurchasePage({
     const quantityInt = parseInt(quantity || "1", 10);
     const chosenColour = colour || "";
 
+    // Ensure quantity does not exceed available quantity
+    if (quantityInt > product.availableQuantity) {
+        return new Response("Requested quantity exceeds available stock", {
+            status: 400,
+        });
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
         amount: product.priceInPence * quantityInt,
         currency: "GBP",
