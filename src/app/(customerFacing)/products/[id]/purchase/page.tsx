@@ -9,20 +9,25 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export default async function PurchasePage({
     params: { id },
-    searchParams: { quantity },
+    searchParams: { quantity, colour },
 }: {
     params: { id: string };
-    searchParams: { quantity?: string };
+    searchParams: { quantity?: string; colour?: string };
 }) {
     const product = await db.product.findUnique({ where: { id } });
     if (product == null) return notFound();
 
     const quantityInt = parseInt(quantity || "1", 10);
+    const chosenColour = colour || "";
 
     const paymentIntent = await stripe.paymentIntents.create({
         amount: product.priceInPence * quantityInt,
         currency: "GBP",
-        metadata: { productId: product.id, quantity: quantityInt },
+        metadata: {
+            productId: product.id,
+            quantity: quantityInt,
+            colour: chosenColour,
+        },
     });
 
     if (paymentIntent.client_secret == null) {
@@ -34,6 +39,7 @@ export default async function PurchasePage({
             product={product}
             clientSecret={paymentIntent.client_secret}
             quantity={quantityInt}
+            colour={chosenColour}
         />
     );
 }

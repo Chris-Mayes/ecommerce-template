@@ -41,14 +41,11 @@ export default async function ProductPage({
                         <p>&#x2022; Length: {product.lengthInMm}</p>
                         <p>&#x2022; Width: {product.widthInMm}</p>
                         <p>&#x2022; Height: {product.heightInMm}</p>
-                        <p>
-                            Available Quantity: {product.availableQuantity}
-                        </p>{" "}
-                        {/* Add this line */}
+                        <p>Available Quantity: {product.availableQuantity}</p>
                     </div>
 
                     <div className="mt-auto pb-4">
-                        <div className="mb-4">
+                        {/* <div className="mb-4">
                             <label htmlFor="colour">Colour</label>
                             <select
                                 id="colour"
@@ -61,13 +58,14 @@ export default async function ProductPage({
                                     </option>
                                 ))}
                             </select>
-                        </div>
+                        </div> */}
                         <p className="text-lg font-semibold mb-4">
                             {formatCurrency(product.priceInPence / 100)}
                         </p>
                         <ProductPurchaseForm
                             productId={id}
                             productPrice={product.priceInPence}
+                            colours={product.colours} // Pass colours to the form
                         />
                     </div>
                 </div>

@@ -2,7 +2,6 @@
 
 "use client";
 
-// import { userOrderExists } from "@/app/actions/orders";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -34,6 +33,7 @@ type CheckoutFormProps = {
     };
     clientSecret: string;
     quantity: number;
+    colour: string; // Add colour here
 };
 
 const stripePromise = loadStripe(
@@ -44,6 +44,7 @@ export function CheckoutForm({
     product,
     clientSecret,
     quantity,
+    colour, // Add colour here
 }: CheckoutFormProps) {
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
@@ -73,6 +74,7 @@ export function CheckoutForm({
                     priceInPence={product.priceInPence}
                     productId={product.id}
                     quantity={quantity}
+                    colour={colour} // Pass colour to Form
                 />
             </Elements>
         </div>
@@ -83,10 +85,12 @@ function Form({
     priceInPence,
     productId,
     quantity,
+    colour, // Add colour here
 }: {
     priceInPence: number;
     productId: string;
     quantity: number;
+    colour: string; // Add colour here
 }) {
     const stripe = useStripe();
     const elements = useElements();
@@ -100,16 +104,6 @@ function Form({
         if (stripe == null || elements == null || email == null) return;
 
         setIsLoading(true);
-
-        // const orderExists = await userOrderExists(email, productId);
-
-        // if (orderExists) {
-        //     setErrorMessage(
-        //         "You have already purchased this product. Try downloading it from the My Orders page"
-        //     );
-        //     setIsLoading(false);
-        //     return;
-        // }
 
         stripe
             .confirmPayment({

@@ -20,7 +20,7 @@ import {
 import { MoreVertical } from "lucide-react";
 import { DeleteDropDownItem } from "./_components/OrderActions";
 
-function getOrders() {
+async function getOrders() {
     return db.order.findMany({
         select: {
             id: true,
@@ -31,6 +31,7 @@ function getOrders() {
                     product: { select: { name: true } },
                     quantity: true,
                     priceInPence: true,
+                    colour: true, // Include colour
                 },
             },
             createdAt: true,
@@ -60,6 +61,7 @@ async function OrdersTable() {
                     <TableHead>Product</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Quantity</TableHead>
+                    <TableHead>Colour</TableHead>
                     <TableHead>Price Paid</TableHead>
                     <TableHead className="w-0">
                         <span className="sr-only">Actions</span>
@@ -73,6 +75,7 @@ async function OrdersTable() {
                             <TableCell>{item.product.name}</TableCell>
                             <TableCell>{order.user.email}</TableCell>
                             <TableCell>{item.quantity}</TableCell>
+                            <TableCell>{item.colour}</TableCell>
                             <TableCell>
                                 {formatCurrency(item.priceInPence / 100)}
                             </TableCell>

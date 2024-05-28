@@ -4,7 +4,6 @@ import db from "@/db/db";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { Resend } from "resend";
-import PurchaseReceiptEmail from "@/email/PurchaseReceipt";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 const resend = new Resend(process.env.RESEND_API_KEY as string);
@@ -25,6 +24,7 @@ export async function POST(req: NextRequest) {
                 const email = charge.billing_details.email;
                 const pricePaidInPence = charge.amount;
                 const quantity = parseInt(charge.metadata.quantity, 10);
+                const colour = charge.metadata.colour;
 
                 console.log(`Charge succeeded: ${JSON.stringify(charge)}`);
 
@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
                                         productId,
                                         priceInPence: pricePaidInPence,
                                         quantity,
+                                        colour,
                                     },
                                 },
                             },
@@ -72,6 +73,7 @@ export async function POST(req: NextRequest) {
                                         productId,
                                         priceInPence: pricePaidInPence,
                                         quantity,
+                                        colour,
                                     },
                                 },
                             },
@@ -115,7 +117,6 @@ export async function POST(req: NextRequest) {
                 });
         }
     } catch (err) {
-        // console.error(`Error processing webhook: ${err.message}`, err);
         return new NextResponse("Webhook handler failed", { status: 500 });
     }
 }
