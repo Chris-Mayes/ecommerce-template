@@ -17,12 +17,30 @@ import {
 import { MoreVertical } from "lucide-react";
 import { DeleteDropDownItem } from "./_components/UserActions";
 
-function getUsers() {
+type UserWithOrders = {
+    id: string;
+    email: string;
+    orders: {
+        items: {
+            priceInPence: number;
+        }[];
+    }[];
+};
+
+async function getUsers(): Promise<UserWithOrders[]> {
     return db.user.findMany({
         select: {
             id: true,
             email: true,
-            orders: { select: { pricePaidInPence: true } },
+            orders: {
+                select: {
+                    items: {
+                        select: {
+                            priceInPence: true,
+                        },
+                    },
+                },
+            },
         },
         orderBy: { createdAt: "desc" },
     });
@@ -59,12 +77,23 @@ async function UsersTable() {
                     <TableRow key={user.id}>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
-                            {formatNumber(user.orders.length)}
+                            {formatNumber(
+                                user.orders.reduce(
+                                    (sum, order) => sum + order.items.length,
+                                    0
+                                )
+                            )}
                         </TableCell>
                         <TableCell>
                             {formatCurrency(
                                 user.orders.reduce(
-                                    (sum, o) => o.pricePaidInPence + sum,
+                                    (sum, order) =>
+                                        sum +
+                                        order.items.reduce(
+                                            (itemSum, item) =>
+                                                item.priceInPence + itemSum,
+                                            0
+                                        ),
                                     0
                                 ) / 100
                             )}
