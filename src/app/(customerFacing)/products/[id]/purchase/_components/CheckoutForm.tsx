@@ -65,6 +65,12 @@ export function CheckoutForm({
                     <div className="line-clamp-3 text-muted-foreground">
                         {product.description}
                     </div>
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Quantity: {quantity}
+                    </div>
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Colour: {colour}
+                    </div>
                 </div>
             </div>
             <Elements options={{ clientSecret }} stripe={stripePromise}>
