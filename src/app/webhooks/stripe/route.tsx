@@ -118,6 +118,19 @@ export async function POST(req: NextRequest) {
                 const order = user.orders[0];
                 console.log(`Created order: ${JSON.stringify(order)}`);
 
+                // await resend.emails.send({
+                //     from: `Support <${process.env.SENDER_EMAIL}>`,
+                //     to: email,
+                //     subject: "Order Confirmation",
+                //     react: (
+                //         <PurchaseReceiptEmail
+                //             order={order}
+                //             product={product}
+                //             downloadVerificationId={""} // Adjust this if you have download verification
+                //         />
+                //     ),
+                // });
+
                 return new NextResponse();
             }
             case "payment_intent.created":
