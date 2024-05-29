@@ -9,11 +9,21 @@ const resend = new Resend(process.env.RESEND_API_KEY as string);
 export async function POST(req: NextRequest) {
     try {
         const sig = req.headers.get("stripe-signature");
-        const event = stripe.webhooks.constructEvent(
-            await req.text(),
-            sig as string,
-            process.env.STRIPE_WEBHOOK_SECRET as string
-        );
+        const text = await req.text();
+        let event: Stripe.Event;
+
+        try {
+            event = stripe.webhooks.constructEvent(
+                text,
+                sig as string,
+                process.env.STRIPE_WEBHOOK_SECRET as string
+            );
+        } catch (err) {
+            console.error(`⚠️  Webhook signature verification failed.`, err);
+            return new NextResponse("Webhook signature verification failed", {
+                status: 400,
+            });
+        }
 
         switch (event.type) {
             case "charge.succeeded": {
@@ -23,6 +33,7 @@ export async function POST(req: NextRequest) {
                 const pricePaidInPence = charge.amount;
                 const quantity = parseInt(charge.metadata.quantity, 10);
                 const colour = charge.metadata.colour;
+                const shippingAddress = charge.shipping?.address;
 
                 console.log(`Charge succeeded: ${JSON.stringify(charge)}`);
 
@@ -60,6 +71,15 @@ export async function POST(req: NextRequest) {
                                         colour,
                                     },
                                 },
+                                shippingAddress: {
+                                    create: {
+                                        line1: shippingAddress?.line1 || "",
+                                        city: shippingAddress?.city || "",
+                                        postalCode:
+                                            shippingAddress?.postal_code || "",
+                                        country: shippingAddress?.country || "",
+                                    },
+                                },
                             },
                         },
                     },
@@ -74,6 +94,15 @@ export async function POST(req: NextRequest) {
                                         colour,
                                     },
                                 },
+                                shippingAddress: {
+                                    create: {
+                                        line1: shippingAddress?.line1 || "",
+                                        city: shippingAddress?.city || "",
+                                        postalCode:
+                                            shippingAddress?.postal_code || "",
+                                        country: shippingAddress?.country || "",
+                                    },
+                                },
                             },
                         },
                     },
@@ -81,26 +110,13 @@ export async function POST(req: NextRequest) {
                         orders: {
                             orderBy: { createdAt: "desc" },
                             take: 1,
-                            include: { items: true },
+                            include: { items: true, shippingAddress: true },
                         },
                     },
                 });
 
                 const order = user.orders[0];
                 console.log(`Created order: ${JSON.stringify(order)}`);
-
-                // await resend.emails.send({
-                //     from: `Support <${process.env.SENDER_EMAIL}>`,
-                //     to: email,
-                //     subject: "Order Confirmation",
-                //     react: (
-                //         <PurchaseReceiptEmail
-                //             order={order}
-                //             product={product}
-                //             downloadVerificationId={""} // Adjust this if you have download verification
-                //         />
-                //     ),
-                // });
 
                 return new NextResponse();
             }
@@ -114,6 +130,7 @@ export async function POST(req: NextRequest) {
                 });
         }
     } catch (err) {
+        console.error("Error handling Stripe webhook:", err);
         return new NextResponse("Webhook handler failed", { status: 500 });
     }
 }

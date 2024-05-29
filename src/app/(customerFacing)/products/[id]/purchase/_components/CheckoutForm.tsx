@@ -14,6 +14,7 @@ import {
     Elements,
     LinkAuthenticationElement,
     PaymentElement,
+    AddressElement,
     useElements,
     useStripe,
 } from "@stripe/react-stripe-js";
@@ -145,6 +146,13 @@ function Form({
                     <div className="mt-4">
                         <LinkAuthenticationElement
                             onChange={(e) => setEmail(e.value.email)}
+                        />
+                    </div>
+                    <div>
+                        <AddressElement
+                            options={{
+                                mode: "shipping",
+                            }}
                         />
                     </div>
                 </CardContent>

@@ -12,7 +12,6 @@ import { PageHeader } from "../_components/PageHeader";
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
@@ -32,6 +31,14 @@ async function getOrders() {
                     colour: true,
                 },
             },
+            shippingAddress: {
+                select: {
+                    line1: true,
+                    city: true,
+                    postalCode: true,
+                    country: true,
+                },
+            },
             createdAt: true,
         },
         orderBy: { createdAt: "desc" },
@@ -41,7 +48,7 @@ async function getOrders() {
 export default function OrdersPage() {
     return (
         <>
-            <PageHeader>Sales</PageHeader>
+            <PageHeader title="Sales" description="Manage your orders" />
             <OrdersTable />
         </>
     );
@@ -61,6 +68,7 @@ async function OrdersTable() {
                     <TableHead>Quantity</TableHead>
                     <TableHead>Colour</TableHead>
                     <TableHead>Price Paid</TableHead>
+                    <TableHead>Shipping Address</TableHead>
                     <TableHead className="w-0">
                         <span className="sr-only">Actions</span>
                     </TableHead>
@@ -76,6 +84,9 @@ async function OrdersTable() {
                             <TableCell>{item.colour}</TableCell>
                             <TableCell>
                                 {formatCurrency(item.priceInPence / 100)}
+                            </TableCell>
+                            <TableCell>
+                                {`${order.shippingAddress?.line1}, ${order.shippingAddress?.city}, ${order.shippingAddress?.postalCode}, ${order.shippingAddress?.country}`}
                             </TableCell>
                             <TableCell className="text-center">
                                 <DropdownMenu>
