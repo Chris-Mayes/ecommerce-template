@@ -2,12 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { isValidPassword } from "./lib/isValidPassword";
 
 export async function middleware(req: NextRequest) {
+    const url = req.nextUrl.clone();
+
+    if (url.pathname === "/orders") {
+        url.pathname = "/path-not-found";
+        return NextResponse.redirect(url);
+    }
+
     if ((await isAuthenticated(req)) === false) {
         return new NextResponse("Unauthorized", {
             status: 401,
             headers: { "WWW-Authenticate": "Basic" },
         });
     }
+
+    return NextResponse.next();
 }
 
 async function isAuthenticated(req: NextRequest) {
@@ -20,8 +29,6 @@ async function isAuthenticated(req: NextRequest) {
         .toString()
         .split(":");
 
-    // isValidPassword(password, "password");
-
     return (
         username === process.env.ADMIN_USERNAME &&
         (await isValidPassword(
@@ -32,5 +39,5 @@ async function isAuthenticated(req: NextRequest) {
 }
 
 export const config = {
-    matcher: "/admin/:path*",
+    matcher: ["/admin/:path*", "/orders"],
 };

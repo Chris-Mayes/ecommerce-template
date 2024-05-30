@@ -24,6 +24,8 @@ export default async function SuccessPage({
     if (product == null) return notFound();
 
     const isSuccess = paymentIntent.status === "succeeded";
+    const quantity = parseInt(paymentIntent.metadata.quantity, 10);
+    const colour = paymentIntent.metadata.colour;
 
     const enableDownload = false;
 
@@ -48,6 +50,12 @@ export default async function SuccessPage({
                     <h1 className="text-2xl font-bold">{product.name}</h1>
                     <div className="line-clamp-3 text-muted-foreground">
                         {product.description}
+                    </div>
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Quantity: {quantity}
+                    </div>
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Colour: {colour}
                     </div>
                     {isSuccess && enableDownload ? (
                         <Button className="mt-4" size="lg" asChild>
