@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import db from "@/db/db";
 import { Resend } from "resend";
+import PurchaseReceiptEmail from "@/email/PurchaseReceipt";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 const resend = new Resend(process.env.RESEND_API_KEY as string);
@@ -116,20 +117,28 @@ export async function POST(req: NextRequest) {
                 });
 
                 const order = user.orders[0];
+                const totalPriceInPence = order.items.reduce(
+                    (sum, item) => sum + item.priceInPence,
+                    0
+                );
+
                 console.log(`Created order: ${JSON.stringify(order)}`);
 
-                // await resend.emails.send({
-                //     from: `Support <${process.env.SENDER_EMAIL}>`,
-                //     to: email,
-                //     subject: "Order Confirmation",
-                //     react: (
-                //         <PurchaseReceiptEmail
-                //             order={order}
-                //             product={product}
-                //             downloadVerificationId={""} // Adjust this if you have download verification
-                //         />
-                //     ),
-                // });
+                await resend.emails.send({
+                    from: `Support <${process.env.SENDER_EMAIL}>`,
+                    to: email,
+                    subject: "Order Confirmation",
+                    react: (
+                        <PurchaseReceiptEmail
+                            order={{
+                                ...order,
+                                pricePaidInPence: totalPriceInPence,
+                            }}
+                            product={product}
+                            downloadVerificationId={""}
+                        />
+                    ),
+                });
 
                 return new NextResponse();
             }
