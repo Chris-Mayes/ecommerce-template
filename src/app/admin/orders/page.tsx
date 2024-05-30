@@ -12,19 +12,34 @@ import { PageHeader } from "../_components/PageHeader";
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { DeleteDropDownItem } from "./_components/OrderActions";
 
-function getOrders() {
+async function getOrders() {
     return db.order.findMany({
         select: {
             id: true,
-            pricePaidInPence: true,
-            product: { select: { name: true } },
             user: { select: { email: true } },
+            items: {
+                select: {
+                    id: true,
+                    product: { select: { name: true } },
+                    quantity: true,
+                    priceInPence: true,
+                    colour: true,
+                },
+            },
+            shippingAddress: {
+                select: {
+                    line1: true,
+                    city: true,
+                    postalCode: true,
+                    country: true,
+                },
+            },
+            createdAt: true,
         },
         orderBy: { createdAt: "desc" },
     });
@@ -33,7 +48,7 @@ function getOrders() {
 export default function OrdersPage() {
     return (
         <>
-            <PageHeader>Sales</PageHeader>
+            <PageHeader title="Sales" description="Manage your orders" />
             <OrdersTable />
         </>
     );
@@ -50,33 +65,43 @@ async function OrdersTable() {
                 <TableRow>
                     <TableHead>Product</TableHead>
                     <TableHead>Customer</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Colour</TableHead>
                     <TableHead>Price Paid</TableHead>
+                    <TableHead>Shipping Address</TableHead>
                     <TableHead className="w-0">
                         <span className="sr-only">Actions</span>
                     </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {orders.map((order) => (
-                    <TableRow key={order.id}>
-                        <TableCell>{order.product.name}</TableCell>
-                        <TableCell>{order.user.email}</TableCell>
-                        <TableCell>
-                            {formatCurrency(order.pricePaidInPence / 100)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger>
-                                    <MoreVertical />
-                                    <span className="sr-only">Actions</span>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DeleteDropDownItem id={order.id} />
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                    </TableRow>
-                ))}
+                {orders.map((order) =>
+                    order.items.map((item) => (
+                        <TableRow key={item.id}>
+                            <TableCell>{item.product.name}</TableCell>
+                            <TableCell>{order.user.email}</TableCell>
+                            <TableCell>{item.quantity}</TableCell>
+                            <TableCell>{item.colour}</TableCell>
+                            <TableCell>
+                                {formatCurrency(item.priceInPence / 100)}
+                            </TableCell>
+                            <TableCell>
+                                {`${order.shippingAddress?.line1}, ${order.shippingAddress?.city}, ${order.shippingAddress?.postalCode}, ${order.shippingAddress?.country}`}
+                            </TableCell>
+                            <TableCell className="text-center">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger>
+                                        <MoreVertical />
+                                        <span className="sr-only">Actions</span>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DeleteDropDownItem id={order.id} />
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    ))
+                )}
             </TableBody>
         </Table>
     );

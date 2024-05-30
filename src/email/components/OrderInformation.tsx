@@ -16,6 +16,8 @@ type OrderInformationProps = {
 
 const dateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
 
+const enableDownload = false;
+
 export function OrderInformation({
     order,
     product,
@@ -44,7 +46,7 @@ export function OrderInformation({
                             Price Paid
                         </Text>
                         <Text className="mt-0 mr-4">
-                            {formatCurrency(order.pricePaidInPence / 100)}
+                            {`£${(order.pricePaidInPence / 100).toFixed(2)}`}
                         </Text>
                     </Column>
                 </Row>
@@ -61,14 +63,16 @@ export function OrderInformation({
                             {product.name}
                         </Text>
                     </Column>
-                    <Column align="right">
-                        <Button
-                            href={`${process.env.NEXT_PUBLIC_SERVER_URL}/products/download/${downloadVerificationId}`}
-                            className="bg-black text-white px-6 py-4 rounded text-lg"
-                        >
-                            Download
-                        </Button>
-                    </Column>
+                    {enableDownload ? (
+                        <Column align="right">
+                            <Button
+                                href={`${process.env.NEXT_PUBLIC_SERVER_URL}/products/download/${downloadVerificationId}`}
+                                className="bg-black text-white px-6 py-4 rounded text-lg"
+                            >
+                                Download
+                            </Button>
+                        </Column>
+                    ) : null}
                 </Row>
                 <Row>
                     <Column>

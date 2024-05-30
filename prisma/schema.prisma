@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,10 +14,14 @@ model Product {
   filePath               String
   imagePath              String
   description            String
+  lengthInMm             Int
+  widthInMm              Int
+  heightInMm             Int
   isAvailableForPurchase Boolean   @default(true)
+  availableQuantity      Int
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
-  orders                 Order[]
+  orders                 OrderItem[]
   downloadVerifications  DownloadVerification[]
   colours                Colour[]
 }
@@ -29,20 +30,42 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
   orders    Order[]
 }
 
 model Order {
-  id               String   @id @default(uuid())
-  pricePaidInPence Int
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                   String            @id @default(uuid())
+  userId               String
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items                OrderItem[]
+  shippingAddress      ShippingAddress?
+  shippingAddressId    String?           @unique
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @default(now())
+}
 
-  userId    String
-  productId String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+model OrderItem {
+  id           String   @id @default(uuid())
+  quantity     Int
+  priceInPence Int
+  colour       String?
+  productId    String
+  orderId      String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+}
+
+model ShippingAddress {
+  id         String   @id @default(uuid())
+  line1      String
+  city       String
+  postalCode String
+  country    String
+  orderId    String   @unique
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model DownloadVerification {

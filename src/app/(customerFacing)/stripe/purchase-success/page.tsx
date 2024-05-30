@@ -24,6 +24,10 @@ export default async function SuccessPage({
     if (product == null) return notFound();
 
     const isSuccess = paymentIntent.status === "succeeded";
+    const quantity = parseInt(paymentIntent.metadata.quantity, 10);
+    const colour = paymentIntent.metadata.colour;
+
+    const enableDownload = false;
 
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
@@ -31,7 +35,7 @@ export default async function SuccessPage({
                 {isSuccess ? "Success!" : "Error!"}
             </h1>
             <div className="flex gap-4 items-center">
-                <div className="aspect-video flex-shrink-0 w-1/3 relative">
+                <div className="relative w-1/4 h-64">
                     <Image
                         src={product.imagePath}
                         fill
@@ -41,14 +45,20 @@ export default async function SuccessPage({
                 </div>
                 <div>
                     <div className="text-lg">
-                        {formatCurrency(product.priceInPence / 100)}
+                        {`£${(product.priceInPence / 100).toFixed(2)}`}
                     </div>
                     <h1 className="text-2xl font-bold">{product.name}</h1>
                     <div className="line-clamp-3 text-muted-foreground">
                         {product.description}
                     </div>
-                    <Button className="mt-4" size="lg" asChild>
-                        {isSuccess ? (
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Quantity: {quantity}
+                    </div>
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Colour: {colour}
+                    </div>
+                    {isSuccess && enableDownload ? (
+                        <Button className="mt-4" size="lg" asChild>
                             <a
                                 href={`/products/download/${await createDownloadVerification(
                                     product.id
@@ -56,12 +66,14 @@ export default async function SuccessPage({
                             >
                                 Download
                             </a>
-                        ) : (
-                            <Link href={`/products/${product.id}/purchase`}>
+                        </Button>
+                    ) : !isSuccess ? (
+                        <Button className="mt-4" size="lg" asChild>
+                            <Link href={`/products/${product.id}/product`}>
                                 Try Again
                             </Link>
-                        )}
-                    </Button>
+                        </Button>
+                    ) : null}
                 </div>
             </div>
         </div>

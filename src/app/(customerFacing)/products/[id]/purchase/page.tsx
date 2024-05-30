@@ -7,16 +7,31 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export default async function PurchasePage({
     params: { id },
+    searchParams: { quantity, colour },
 }: {
     params: { id: string };
+    searchParams: { quantity?: string; colour?: string };
 }) {
     const product = await db.product.findUnique({ where: { id } });
     if (product == null) return notFound();
 
+    const quantityInt = parseInt(quantity || "1", 10);
+    const chosenColour = colour || "";
+
+    if (quantityInt > product.availableQuantity) {
+        return new Response("Requested quantity exceeds available stock", {
+            status: 400,
+        });
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
-        amount: product.priceInPence,
+        amount: product.priceInPence * quantityInt,
         currency: "GBP",
-        metadata: { productId: product.id },
+        metadata: {
+            productId: product.id,
+            quantity: quantityInt,
+            colour: chosenColour,
+        },
     });
 
     if (paymentIntent.client_secret == null) {
@@ -27,6 +42,8 @@ export default async function PurchasePage({
         <CheckoutForm
             product={product}
             clientSecret={paymentIntent.client_secret}
+            quantity={quantityInt}
+            colour={chosenColour}
         />
     );
 }

@@ -27,10 +27,22 @@ export function ProductForm({
     const [priceInPence, setPriceInPence] = useState<number | undefined>(
         product?.priceInPence
     );
+    const [availableQuantity, setAvailableQuantity] = useState<
+        number | undefined
+    >(product?.availableQuantity);
     const [colours, setColours] = useState<string[]>(
         product?.colours?.map((c) => c.name) || []
     );
     const [newColour, setNewColour] = useState<string>("");
+    const [lengthInMm, setLengthInMm] = useState<number | undefined>(
+        product?.lengthInMm
+    );
+    const [widthInMm, setWidthInMm] = useState<number | undefined>(
+        product?.widthInMm
+    );
+    const [heightInMm, setHeightInMm] = useState<number | undefined>(
+        product?.heightInMm
+    );
 
     const addColour = () => {
         if (newColour && !colours.includes(newColour)) {
@@ -84,6 +96,45 @@ export function ProductForm({
                 {error.description && (
                     <div className="text-destructive">{error.description}</div>
                 )}
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="lengthInMm">Length (mm)</Label>
+                <Input
+                    type="number"
+                    id="lengthInMm"
+                    name="lengthInMm"
+                    required
+                    value={lengthInMm}
+                    onChange={(e) =>
+                        setLengthInMm(Number(e.target.value) || undefined)
+                    }
+                />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="widthInMm">Width (mm)</Label>
+                <Input
+                    type="number"
+                    id="widthInMm"
+                    name="widthInMm"
+                    required
+                    value={widthInMm}
+                    onChange={(e) =>
+                        setWidthInMm(Number(e.target.value) || undefined)
+                    }
+                />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="heightInMm">Height (mm)</Label>
+                <Input
+                    type="number"
+                    id="heightInMm"
+                    name="heightInMm"
+                    required
+                    value={heightInMm}
+                    onChange={(e) =>
+                        setHeightInMm(Number(e.target.value) || undefined)
+                    }
+                />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="file">File</Label>
@@ -163,7 +214,21 @@ export function ProductForm({
                     value={JSON.stringify(colours)}
                 />
             </div>
-
+            <div className="space-y-2">
+                <Label htmlFor="availableQuantity">Available Quantity</Label>
+                <Input
+                    type="number"
+                    id="availableQuantity"
+                    name="availableQuantity"
+                    required
+                    value={availableQuantity}
+                    onChange={(e) =>
+                        setAvailableQuantity(
+                            Number(e.target.value) || undefined
+                        )
+                    }
+                />
+            </div>
             <SubmitButton />
         </form>
     );

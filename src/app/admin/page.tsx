@@ -1,3 +1,5 @@
+// src\app\admin\page.tsx
+
 import {
     Card,
     CardContent,
@@ -9,13 +11,13 @@ import db from "@/db/db";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 
 async function getSalesData() {
-    const data = await db.order.aggregate({
-        _sum: { pricePaidInPence: true },
+    const data = await db.orderItem.aggregate({
+        _sum: { priceInPence: true },
         _count: true,
     });
 
     return {
-        amount: (data._sum.pricePaidInPence || 0) / 100,
+        amount: (data._sum.priceInPence || 0) / 100,
         numberOfSales: data._count,
     };
 }
@@ -23,8 +25,8 @@ async function getSalesData() {
 async function getUserData() {
     const [userCount, orderData] = await Promise.all([
         db.user.count(),
-        db.order.aggregate({
-            _sum: { pricePaidInPence: true },
+        db.orderItem.aggregate({
+            _sum: { priceInPence: true },
         }),
     ]);
 
@@ -33,7 +35,7 @@ async function getUserData() {
         averageValuePerUser:
             userCount === 0
                 ? 0
-                : (orderData._sum.pricePaidInPence || 0) / userCount / 100,
+                : (orderData._sum.priceInPence || 0) / userCount / 100,
     };
 }
 

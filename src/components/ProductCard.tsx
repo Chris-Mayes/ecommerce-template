@@ -34,7 +34,7 @@ export function ProductCard({
             <CardHeader>
                 <CardTitle>{name}</CardTitle>
                 <CardDescription>
-                    {formatCurrency(priceInPence / 100)}
+                    {`£${(priceInPence / 100).toFixed(2)}`}
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">

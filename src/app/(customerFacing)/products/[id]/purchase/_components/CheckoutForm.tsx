@@ -1,6 +1,5 @@
 "use client";
 
-import { userOrderExists } from "@/app/actions/orders";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -15,6 +14,7 @@ import {
     Elements,
     LinkAuthenticationElement,
     PaymentElement,
+    AddressElement,
     useElements,
     useStripe,
 } from "@stripe/react-stripe-js";
@@ -31,13 +31,20 @@ type CheckoutFormProps = {
         description: string;
     };
     clientSecret: string;
+    quantity: number;
+    colour: string;
 };
 
 const stripePromise = loadStripe(
     process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
 );
 
-export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
+export function CheckoutForm({
+    product,
+    clientSecret,
+    quantity,
+    colour,
+}: CheckoutFormProps) {
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
             <div className="flex gap-5 pt-8 pb-8 items-center">
@@ -51,11 +58,17 @@ export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
                 </div>
                 <div>
                     <div className="text-lg">
-                        {formatCurrency(product.priceInPence / 100)}
+                        {`£${(product.priceInPence / 100).toFixed(2)}`}
                     </div>
                     <h1 className="text-2xl font-bold">{product.name}</h1>
                     <div className="line-clamp-3 text-muted-foreground">
                         {product.description}
+                    </div>
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Quantity: {quantity}
+                    </div>
+                    <div className="line-clamp-3 text-muted-foreground">
+                        Colour: {colour}
                     </div>
                 </div>
             </div>
@@ -63,6 +76,8 @@ export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
                 <Form
                     priceInPence={product.priceInPence}
                     productId={product.id}
+                    quantity={quantity}
+                    colour={colour}
                 />
             </Elements>
         </div>
@@ -72,9 +87,13 @@ export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
 function Form({
     priceInPence,
     productId,
+    quantity,
+    colour,
 }: {
     priceInPence: number;
     productId: string;
+    quantity: number;
+    colour: string;
 }) {
     const stripe = useStripe();
     const elements = useElements();
@@ -88,16 +107,6 @@ function Form({
         if (stripe == null || elements == null || email == null) return;
 
         setIsLoading(true);
-
-        const orderExists = await userOrderExists(email, productId);
-
-        if (orderExists) {
-            setErrorMessage(
-                "You have already purchased this product. Try downloading it from the My Orders page"
-            );
-            setIsLoading(false);
-            return;
-        }
 
         stripe
             .confirmPayment({
@@ -137,6 +146,13 @@ function Form({
                             onChange={(e) => setEmail(e.value.email)}
                         />
                     </div>
+                    <div>
+                        <AddressElement
+                            options={{
+                                mode: "shipping",
+                            }}
+                        />
+                    </div>
                 </CardContent>
                 <CardFooter>
                     <Button
@@ -148,9 +164,7 @@ function Form({
                     >
                         {isLoading
                             ? "Purchasing..."
-                            : `Purchase - ${formatCurrency(
-                                  priceInPence / 100
-                              )}`}
+                            : `Purchase - £${(priceInPence / 100).toFixed(2)}`}
                     </Button>
                 </CardFooter>
             </Card>

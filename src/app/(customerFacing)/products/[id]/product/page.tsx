@@ -1,9 +1,7 @@
 import db from "@/db/db";
 import { notFound } from "next/navigation";
-import { Button } from "../../../../../components/ui/button";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
 import Image from "next/image";
+import ProductPurchaseForm from "../../../../../components/ProductPurchasePage";
 import { formatCurrency } from "@/lib/formatters";
 
 export default async function ProductPage({
@@ -13,14 +11,23 @@ export default async function ProductPage({
 }) {
     const product = await db.product.findUnique({
         where: { id },
-        include: { colours: true }, // Include colours in the query
+        include: { colours: true },
     });
-    if (product == null) return notFound();
+
+    if (!product) return notFound();
+
+    const serializableProduct = {
+        ...product,
+        colours: product.colours.map((colour) => ({
+            id: colour.id,
+            name: colour.name,
+        })),
+    };
 
     return (
         <div className="p-4 max-w-5xl pt-20 mx-auto">
-            <div className="flex w-full mb-4">
-                <div className="relative w-1/2 h-112">
+            <div className="flex flex-col lg:flex-row w-full">
+                <div className="relative w-full lg:w-1/2 h-112 mb-4 lg:mb-0">
                     <Image
                         src={product.imagePath}
                         layout="fill"
@@ -29,42 +36,44 @@ export default async function ProductPage({
                     />
                 </div>
 
-                <div className="flex flex-col w-1/2 pl-12 pt-2 justify-between">
+                <div className="flex flex-col w-full lg:w-1/2 pl-0 lg:pl-12 negative-mt-2 justify-between">
                     <div className="flex mb-4">
                         <h1 className="text-2xl font-bold text-left">
                             {product.name}
                         </h1>
                     </div>
+                    <p className="text-lg font-semibold mb-4">
+                        {`£${(product.priceInPence / 100).toFixed(2)}`}
+                    </p>
                     <div className="flex-grow flex flex-col justify-top">
-                        <p className="mb-2">{product.description}</p>
-                    </div>
-                    <div className="mt-auto pb-4">
-                        <div className="mb-4">
-                            <Label htmlFor="colour">Colour</Label>
-                            <select
-                                id="colour"
-                                name="colour"
-                                className="block w-full mt-1"
-                            >
-                                {product.colours.map((colour) => (
-                                    <option key={colour.id} value={colour.name}>
-                                        {colour.name}
-                                    </option>
-                                ))}
-                            </select>
+                        <p className="mb-2 pb-3">{product.description}</p>
+                        <div className="mt-4">
+                            <p className="font-semibold">
+                                Approximate Dimensions (mm):
+                            </p>
+                            <div className="flex items-center space-x-2">
+                                <span className="font-medium">Length:</span>
+                                <span>{product.lengthInMm}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <span className="font-medium">Width:</span>
+                                <span>{product.widthInMm}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <span className="font-medium">Height:</span>
+                                <span>{product.heightInMm}</span>
+                            </div>
                         </div>
-                        <p className="text-lg font-semibold mb-4">
-                            {formatCurrency(product.priceInPence / 100)}
-                        </p>
-                        <Button
-                            asChild
-                            size="lg"
-                            className="w-auto max-w-xs self-start --primary-buttons"
-                        >
-                            <Link href={`/products/${id}/purchase`}>
-                                Purchase
-                            </Link>
-                        </Button>
+                    </div>
+
+                    <div className="mt-auto pt-4">
+                        <p>Available Quantity: {product.availableQuantity}</p>
+                        <ProductPurchaseForm
+                            productId={id}
+                            productPrice={product.priceInPence}
+                            colours={serializableProduct.colours}
+                            availableQuantity={product.availableQuantity}
+                        />
                     </div>
                 </div>
             </div>
