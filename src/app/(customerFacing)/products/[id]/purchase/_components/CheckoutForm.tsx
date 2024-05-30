@@ -58,9 +58,7 @@ export function CheckoutForm({
                 </div>
                 <div>
                     <div className="text-lg">
-                        {formatCurrency(
-                            (product.priceInPence * quantity) / 100
-                        )}
+                        {`£${(product.priceInPence / 100).toFixed(2)}`}
                     </div>
                     <h1 className="text-2xl font-bold">{product.name}</h1>
                     <div className="line-clamp-3 text-muted-foreground">
@@ -166,9 +164,7 @@ function Form({
                     >
                         {isLoading
                             ? "Purchasing..."
-                            : `Purchase - ${formatCurrency(
-                                  (priceInPence * quantity) / 100
-                              )}`}
+                            : `Purchase - £${(priceInPence / 100).toFixed(2)}`}
                     </Button>
                 </CardFooter>
             </Card>

@@ -41,7 +41,7 @@ export default async function SuccessPage({
                 </div>
                 <div>
                     <div className="text-lg">
-                        {formatCurrency(product.priceInPence / 100)}
+                        {`£${(product.priceInPence / 100).toFixed(2)}`}
                     </div>
                     <h1 className="text-2xl font-bold">{product.name}</h1>
                     <div className="line-clamp-3 text-muted-foreground">

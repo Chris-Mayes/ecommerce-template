@@ -44,7 +44,7 @@ export function OrderInformation({
                             Price Paid
                         </Text>
                         <Text className="mt-0 mr-4">
-                            {formatCurrency(order.pricePaidInPence / 100)}
+                            {`£${(order.pricePaidInPence / 100).toFixed(2)}`}
                         </Text>
                     </Column>
                 </Row>

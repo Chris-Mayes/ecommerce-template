@@ -43,7 +43,7 @@ export default async function ProductPage({
                         </h1>
                     </div>
                     <p className="text-lg font-semibold mb-4">
-                        {formatCurrency(product.priceInPence / 100)}
+                        {`£${(product.priceInPence / 100).toFixed(2)}`}
                     </p>
                     <div className="flex-grow flex flex-col justify-top">
                         <p className="mb-2 pb-3">{product.description}</p>
