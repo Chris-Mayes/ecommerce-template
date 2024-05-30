@@ -25,6 +25,8 @@ export default async function SuccessPage({
 
     const isSuccess = paymentIntent.status === "succeeded";
 
+    const enableDownload = false;
+
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
             <h1 className="text-4xl font-bold">
@@ -47,8 +49,8 @@ export default async function SuccessPage({
                     <div className="line-clamp-3 text-muted-foreground">
                         {product.description}
                     </div>
-                    <Button className="mt-4" size="lg" asChild>
-                        {isSuccess ? (
+                    {isSuccess && enableDownload ? (
+                        <Button className="mt-4" size="lg" asChild>
                             <a
                                 href={`/products/download/${await createDownloadVerification(
                                     product.id
@@ -56,12 +58,14 @@ export default async function SuccessPage({
                             >
                                 Download
                             </a>
-                        ) : (
-                            <Link href={`/products/${product.id}/purchase`}>
+                        </Button>
+                    ) : !isSuccess ? (
+                        <Button className="mt-4" size="lg" asChild>
+                            <Link href={`/products/${product.id}/product`}>
                                 Try Again
                             </Link>
-                        )}
-                    </Button>
+                        </Button>
+                    ) : null}
                 </div>
             </div>
         </div>
