@@ -49,34 +49,6 @@ export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
 
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
-            <div className="space-y-4">
-                {cart.map((item, index) => (
-                    <div
-                        key={index}
-                        className="flex gap-5 pt-8 pb-8 items-center"
-                    >
-                        <div className="relative w-1/4 h-56">
-                            <Image
-                                src={item.imagePath}
-                                alt={item.name}
-                                fill
-                                style={{ objectFit: "contain" }}
-                            />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-bold">{item.name}</h1>
-                            <div>Colour: {item.colour}</div>
-                            <div>
-                                Price: £
-                                {(
-                                    (item.productPrice * item.quantity) /
-                                    100
-                                ).toFixed(2)}
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
             <div className="text-left text-lg font-bold">
                 Total: £{(totalPrice / 100).toFixed(2)}
             </div>
@@ -133,30 +105,42 @@ const PaymentForm = ({ totalPrice }: { totalPrice: number }) => {
         <form onSubmit={handleSubmit}>
             <Card>
                 <CardHeader>
-                    <CardTitle>Payment</CardTitle>
-                    <CardDescription>
-                        Enter your payment details below.
-                    </CardDescription>
+                    <CardTitle>Checkout</CardTitle>
+                    {errorMessage && (
+                        <CardDescription className="text-destructive">
+                            {errorMessage}
+                        </CardDescription>
+                    )}
                 </CardHeader>
                 <CardContent>
-                    <LinkAuthenticationElement
-                        id="link-authentication-element"
-                        onChange={(e) => setEmail(e.value.email)}
-                    />
-                    <PaymentElement id="payment-element" />
-                    <AddressElement options={{ mode: "shipping" }} />
+                    <PaymentElement />
+                    <div className="mt-4">
+                        <LinkAuthenticationElement
+                            onChange={(e) => setEmail(e.value.email)}
+                        />
+                    </div>
+                    <div>
+                        <AddressElement
+                            options={{
+                                mode: "shipping",
+                            }}
+                        />
+                    </div>
                 </CardContent>
                 <CardFooter>
-                    <Button type="submit" disabled={!stripe || isLoading}>
+                    <Button
+                        className="w-full"
+                        size="lg"
+                        disabled={
+                            stripe == null || elements == null || isLoading
+                        }
+                    >
                         {isLoading
-                            ? "Processing..."
-                            : `Pay £${(totalPrice / 100).toFixed(2)}`}
+                            ? "Purchasing..."
+                            : `Purchase - £${(totalPrice / 100).toFixed(2)}`}
                     </Button>
                 </CardFooter>
             </Card>
-            {errorMessage && (
-                <div className="text-red-500 mt-4">{errorMessage}</div>
-            )}
         </form>
     );
 };

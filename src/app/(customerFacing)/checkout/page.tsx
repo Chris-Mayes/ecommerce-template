@@ -10,10 +10,15 @@ import Image from "next/image";
 export default function CheckoutPage() {
     const { cart } = useCart();
     const [clientSecret, setClientSecret] = useState<string | null>(null);
+    const [isClient, setIsClient] = useState(false); // State to track if it's client-side
     const router = useRouter();
 
     useEffect(() => {
-        if (cart.length > 0) {
+        setIsClient(true); // Set isClient to true when the component is mounted on the client side
+    }, []);
+
+    useEffect(() => {
+        if (isClient && cart.length > 0) {
             const createPaymentIntent = async () => {
                 try {
                     const response = await fetch("/api/create-payment-intent", {
@@ -33,7 +38,11 @@ export default function CheckoutPage() {
 
             createPaymentIntent();
         }
-    }, [cart]);
+    }, [isClient, cart]);
+
+    if (!isClient) {
+        return null; // Render nothing on the server side
+    }
 
     if (cart.length === 0) {
         return <div>Your basket is empty.</div>;
@@ -58,8 +67,8 @@ export default function CheckoutPage() {
                             <Image
                                 src={item.imagePath}
                                 alt={item.name}
-                                layout="fill"
-                                objectFit="contain"
+                                fill
+                                style={{ objectFit: "contain" }}
                             />
                         </div>
                         <div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { useCart } from "@/context/CartContext";
+import { Transition } from "@headlessui/react";
 
 interface Colour {
     id: string;
@@ -30,6 +31,7 @@ export default function ProductPurchaseForm({
     const [quantity, setQuantity] = useState(1);
     const [colour, setColour] = useState(colours[0]?.name || "");
     const { addToCart, cart } = useCart();
+    const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
     const handleQuantityChange = (value: number) => {
         if (value > 0 && value <= availableQuantity) {
@@ -45,6 +47,13 @@ export default function ProductPurchaseForm({
 
     const isAvailable = availableQuantity > 0;
 
+    const showAlert = (message: string) => {
+        setAlertMessage(message);
+        setTimeout(() => {
+            setAlertMessage(null);
+        }, 4000); // Hide alert after 3 seconds
+    };
+
     const handleAddToCart = () => {
         const itemInCart = cart.find(
             (item) => item.productId === productId && item.colour === colour
@@ -55,11 +64,11 @@ export default function ProductPurchaseForm({
             .reduce((total, item) => total + item.quantity, 0);
 
         if (totalQuantityInCart + quantity > availableQuantity) {
-            alert(
-                `Cannot add more than ${availableQuantity} items of this product.`
+            showAlert(
+                `Failed to add to basket. We only have ${availableQuantity} of these available!`
             );
         } else if (itemInCart) {
-            alert("This configuration is already in the cart.");
+            showAlert("This colour is already in your basket!");
         } else {
             addToCart({
                 productId,
@@ -69,7 +78,7 @@ export default function ProductPurchaseForm({
                 imagePath,
                 name,
             });
-            alert("Product added to cart!");
+            showAlert("Added to basket!");
         }
     };
 
@@ -134,6 +143,19 @@ export default function ProductPurchaseForm({
             >
                 {isAvailable ? "Add to Cart" : "Out of Stock"}
             </Button>
+            <Transition
+                show={!!alertMessage}
+                enter="transition-opacity duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="transition-opacity duration-300"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+            >
+                <div className="mt-4 p-4 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+                    {alertMessage}
+                </div>
+            </Transition>
         </div>
     );
 }
