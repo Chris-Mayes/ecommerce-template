@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import Link from "next/link";
+import { useCart } from "@/context/CartContext"; // Import the cart context
 
 interface Colour {
     id: string;
@@ -15,6 +15,8 @@ interface ProductPurchaseFormProps {
     productPrice: number;
     colours: Colour[];
     availableQuantity: number;
+    imagePath: string; // Add imagePath
+    name: string; // Add name
 }
 
 export default function ProductPurchaseForm({
@@ -22,9 +24,12 @@ export default function ProductPurchaseForm({
     productPrice,
     colours,
     availableQuantity,
+    imagePath, // Add imagePath
+    name, // Add name
 }: ProductPurchaseFormProps) {
     const [quantity, setQuantity] = useState(1);
     const [colour, setColour] = useState(colours[0]?.name || "");
+    const { addToCart } = useCart(); // Use the addToCart function from the context
 
     const handleQuantityChange = (value: number) => {
         if (value > 0 && value <= availableQuantity) {
@@ -39,6 +44,18 @@ export default function ProductPurchaseForm({
     };
 
     const isAvailable = availableQuantity > 0;
+
+    const handleAddToCart = () => {
+        addToCart({
+            productId,
+            quantity,
+            colour,
+            productPrice,
+            imagePath,
+            name,
+        });
+        alert("Product added to cart!");
+    };
 
     return (
         <div className="space-y-4">
@@ -99,15 +116,11 @@ export default function ProductPurchaseForm({
             </p>
             {isAvailable ? (
                 <Button
-                    asChild
                     size="lg"
                     className="w-auto max-w-xs self-start --primary-buttons"
+                    onClick={handleAddToCart}
                 >
-                    <Link
-                        href={`/products/${productId}/purchase?quantity=${quantity}&colour=${colour}`}
-                    >
-                        Purchase
-                    </Link>
+                    Add to Cart
                 </Button>
             ) : (
                 <Button

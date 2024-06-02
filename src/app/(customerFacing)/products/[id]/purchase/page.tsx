@@ -1,49 +1,82 @@
+"use client";
+
+import { useEffect } from "react";
 import db from "@/db/db";
 import { notFound } from "next/navigation";
 import Stripe from "stripe";
 import { CheckoutForm } from "./_components/CheckoutForm";
+import { useCart } from "@/context/CartContext";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-export default async function PurchasePage({
+export default function PurchasePage({
     params: { id },
     searchParams: { quantity, colour },
 }: {
     params: { id: string };
     searchParams: { quantity?: string; colour?: string };
 }) {
-    const product = await db.product.findUnique({ where: { id } });
-    if (product == null) return notFound();
+    const { addToCart, cart } = useCart();
 
-    const quantityInt = parseInt(quantity || "1", 10);
-    const chosenColour = colour || "";
+    useEffect(() => {
+        const fetchData = async () => {
+            const product = await db.product.findUnique({ where: { id } });
+            if (product == null) return notFound();
 
-    if (quantityInt > product.availableQuantity) {
-        return new Response("Requested quantity exceeds available stock", {
-            status: 400,
-        });
-    }
+            const quantityInt = parseInt(quantity || "1", 10);
+            const chosenColour = colour || "";
 
-    const paymentIntent = await stripe.paymentIntents.create({
-        amount: product.priceInPence * quantityInt,
-        currency: "GBP",
-        metadata: {
-            productId: product.id,
-            quantity: quantityInt,
-            colour: chosenColour,
-        },
-    });
+            if (quantityInt > product.availableQuantity) {
+                return new Response(
+                    "Requested quantity exceeds available stock",
+                    {
+                        status: 400,
+                    }
+                );
+            }
 
-    if (paymentIntent.client_secret == null) {
-        throw Error("Stripe failed to create payment intent");
-    }
+            addToCart({
+                productId: id,
+                quantity: quantityInt,
+                colour: chosenColour,
+                productPrice: product.priceInPence,
+                imagePath: product.imagePath,
+                name: product.name,
+            });
 
-    return (
-        <CheckoutForm
-            product={product}
-            clientSecret={paymentIntent.client_secret}
-            quantity={quantityInt}
-            colour={chosenColour}
-        />
-    );
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: product.priceInPence * quantityInt,
+                currency: "GBP",
+                metadata: {
+                    productId: product.id,
+                    quantity: quantityInt,
+                    colour: chosenColour,
+                },
+            });
+
+            if (paymentIntent.client_secret == null) {
+                throw Error("Stripe failed to create payment intent");
+            }
+
+            return (
+                <CheckoutForm
+                    cart={[
+                        {
+                            productId: id,
+                            quantity: quantityInt,
+                            colour: chosenColour,
+                            productPrice: product.priceInPence,
+                            imagePath: product.imagePath,
+                            name: product.name,
+                        },
+                    ]}
+                    clientSecret={paymentIntent.client_secret}
+                />
+            );
+        };
+
+        fetchData();
+    }, [id, quantity, colour, addToCart]);
+
+    return <div>Loading...</div>;
 }

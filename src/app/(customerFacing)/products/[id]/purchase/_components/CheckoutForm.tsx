@@ -4,102 +4,108 @@ import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardFooter,
     CardHeader,
     CardTitle,
+    CardDescription,
 } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/formatters";
 import {
     Elements,
-    LinkAuthenticationElement,
     PaymentElement,
-    AddressElement,
     useElements,
     useStripe,
+    LinkAuthenticationElement,
+    AddressElement,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import Image from "next/image";
 import { FormEvent, useState } from "react";
-
-type CheckoutFormProps = {
-    product: {
-        id: string;
-        imagePath: string;
-        name: string;
-        priceInPence: number;
-        description: string;
-    };
-    clientSecret: string;
-    quantity: number;
-    colour: string;
-};
+import Image from "next/image";
+import { useCart } from "@/context/CartContext";
+import { useRouter } from "next/navigation";
 
 const stripePromise = loadStripe(
     process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string
 );
 
-export function CheckoutForm({
-    product,
-    clientSecret,
-    quantity,
-    colour,
-}: CheckoutFormProps) {
+interface CartItem {
+    productId: string;
+    quantity: number;
+    colour: string;
+    productPrice: number;
+    imagePath: string;
+    name: string;
+}
+
+type CheckoutFormProps = {
+    cart: CartItem[];
+    clientSecret: string;
+};
+
+export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
+    const { removeFromCart } = useCart();
+
+    const totalPrice = cart.reduce(
+        (total, item) => total + item.productPrice * item.quantity,
+        0
+    );
+
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
-            <div className="flex gap-5 pt-8 pb-8 items-center">
-                <div className="relative w-1/4 h-56">
-                    <Image
-                        src={product.imagePath}
-                        layout="fill"
-                        objectFit="contain"
-                        alt={product.name}
-                    />
-                </div>
-                <div>
-                    <div className="text-lg">
-                        {`£${(product.priceInPence / 100).toFixed(2)}`}
+            <div className="space-y-4">
+                {cart.map((item, index) => (
+                    <div
+                        key={index}
+                        className="flex gap-5 pt-8 pb-8 items-center"
+                    >
+                        <div className="relative w-1/4 h-56">
+                            <Image
+                                src={item.imagePath}
+                                layout="fill"
+                                objectFit="contain"
+                                alt={item.name}
+                            />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold">{item.name}</h1>
+                            <div>Quantity: {item.quantity}</div>
+                            <div>Colour: {item.colour}</div>
+                            <div>
+                                Price: £
+                                {(
+                                    (item.productPrice * item.quantity) /
+                                    100
+                                ).toFixed(2)}
+                            </div>
+                            <Button
+                                onClick={() =>
+                                    removeFromCart(item.productId, item.colour)
+                                }
+                                className="mt-2"
+                            >
+                                Remove
+                            </Button>
+                        </div>
                     </div>
-                    <h1 className="text-2xl font-bold">{product.name}</h1>
-                    <div className="line-clamp-3 text-muted-foreground">
-                        {product.description}
-                    </div>
-                    <div className="line-clamp-3 text-muted-foreground">
-                        Quantity: {quantity}
-                    </div>
-                    <div className="line-clamp-3 text-muted-foreground">
-                        Colour: {colour}
-                    </div>
-                </div>
+                ))}
             </div>
-            <Elements options={{ clientSecret }} stripe={stripePromise}>
-                <Form
-                    priceInPence={product.priceInPence}
-                    productId={product.id}
-                    quantity={quantity}
-                    colour={colour}
-                />
+            <div className="text-right text-lg font-bold">
+                Total: £{(totalPrice / 100).toFixed(2)}
+            </div>
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <PaymentForm totalPrice={totalPrice} />
             </Elements>
         </div>
     );
 }
 
-function Form({
-    priceInPence,
-    productId,
-    quantity,
-    colour,
-}: {
-    priceInPence: number;
-    productId: string;
-    quantity: number;
-    colour: string;
-}) {
+const PaymentForm = ({ totalPrice }: { totalPrice: number }) => {
     const stripe = useStripe();
     const elements = useElements();
+    const router = useRouter();
+
     const [isLoading, setIsLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string>();
-    const [email, setEmail] = useState<string>();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [email, setEmail] = useState<string | null>(null);
 
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
@@ -108,24 +114,28 @@ function Form({
 
         setIsLoading(true);
 
-        stripe
-            .confirmPayment({
-                elements,
-                confirmParams: {
-                    return_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/stripe/purchase-success`,
-                },
-            })
-            .then(({ error }) => {
-                if (
-                    error.type === "card_error" ||
-                    error.type === "validation_error"
-                ) {
-                    setErrorMessage(error.message);
-                } else {
-                    setErrorMessage("An unknown error occurred");
-                }
-            })
-            .finally(() => setIsLoading(false));
+        const { error } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/stripe/purchase-success`,
+            },
+        });
+
+        if (error) {
+            if (
+                error.type === "card_error" ||
+                error.type === "validation_error"
+            ) {
+                setErrorMessage(error.message ?? "An unknown error occurred");
+            } else {
+                setErrorMessage("An unknown error occurred");
+            }
+        } else {
+            // Redirect to success page
+            router.push("/stripe/purchase-success");
+        }
+
+        setIsLoading(false);
     }
 
     return (
@@ -164,10 +174,10 @@ function Form({
                     >
                         {isLoading
                             ? "Purchasing..."
-                            : `Purchase - £${(priceInPence / 100).toFixed(2)}`}
+                            : `Purchase - £${(totalPrice / 100).toFixed(2)}`}
                     </Button>
                 </CardFooter>
             </Card>
         </form>
     );
-}
+};

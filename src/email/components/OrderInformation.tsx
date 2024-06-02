@@ -11,6 +11,8 @@ import {
 type OrderInformationProps = {
     order: { id: string; createdAt: Date; pricePaidInPence: number };
     product: { imagePath: string; name: string; description: string };
+    quantity: number;
+    colour: string;
     downloadVerificationId: string;
 };
 
@@ -21,6 +23,8 @@ const enableDownload = false;
 export function OrderInformation({
     order,
     product,
+    quantity,
+    colour,
     downloadVerificationId,
 }: OrderInformationProps) {
     return (
@@ -61,6 +65,12 @@ export function OrderInformation({
                     <Column className="align-bottom">
                         <Text className="text-lg font-bold m-0 mr-4">
                             {product.name}
+                        </Text>
+                        <Text className="text-gray-500 mb-0">
+                            Quantity: {quantity}
+                        </Text>
+                        <Text className="text-gray-500 mb-0">
+                            Colour: {colour}
                         </Text>
                     </Column>
                     {enableDownload ? (

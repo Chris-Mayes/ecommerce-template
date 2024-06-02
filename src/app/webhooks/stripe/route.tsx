@@ -29,34 +29,34 @@ export async function POST(req: NextRequest) {
         switch (event.type) {
             case "charge.succeeded": {
                 const charge = event.data.object as Stripe.Charge;
-                const productId = charge.metadata.productId;
+                const cartId = charge.metadata.cartId;
                 const email = charge.billing_details.email;
-                const pricePaidInPence = charge.amount;
-                const quantity = parseInt(charge.metadata.quantity, 10);
-                const colour = charge.metadata.colour;
                 const shippingAddress = charge.shipping?.address;
 
                 console.log(`Charge succeeded: ${JSON.stringify(charge)}`);
 
-                const product = await db.product.findUnique({
-                    where: { id: productId },
+                const cart = await db.cart.findUnique({
+                    where: { id: cartId },
+                    include: { items: true },
                 });
 
-                if (!product || !email) {
+                if (!cart || !email) {
                     console.error(
-                        `Product not found or invalid email: ${productId}, ${email}`
+                        `Cart not found or invalid email: ${cartId}, ${email}`
                     );
                     return new NextResponse("Bad Request", { status: 400 });
                 }
 
-                await db.product.update({
-                    where: { id: productId },
-                    data: {
-                        availableQuantity: product.availableQuantity - quantity,
-                    },
-                });
-
-                console.log(`Updated product quantity for ${productId}`);
+                for (const item of cart.items) {
+                    await db.product.update({
+                        where: { id: item.productId },
+                        data: {
+                            availableQuantity: {
+                                decrement: item.quantity,
+                            },
+                        },
+                    });
+                }
 
                 const user = await db.user.upsert({
                     where: { email },
@@ -65,22 +65,27 @@ export async function POST(req: NextRequest) {
                         orders: {
                             create: {
                                 items: {
-                                    create: {
-                                        productId,
-                                        priceInPence: pricePaidInPence,
-                                        quantity,
-                                        colour,
-                                    },
+                                    create: cart.items.map((item) => ({
+                                        productId: item.productId,
+                                        priceInPence: item.price,
+                                        quantity: item.quantity,
+                                        colour: item.colour,
+                                    })),
                                 },
-                                shippingAddress: {
-                                    create: {
-                                        line1: shippingAddress?.line1 || "",
-                                        city: shippingAddress?.city || "",
-                                        postalCode:
-                                            shippingAddress?.postal_code || "",
-                                        country: shippingAddress?.country || "",
-                                    },
-                                },
+                                shippingAddress: shippingAddress
+                                    ? {
+                                          create: {
+                                              line1:
+                                                  shippingAddress.line1 || "",
+                                              city: shippingAddress.city || "",
+                                              postalCode:
+                                                  shippingAddress.postal_code ||
+                                                  "",
+                                              country:
+                                                  shippingAddress.country || "",
+                                          },
+                                      }
+                                    : undefined,
                             },
                         },
                     },
@@ -88,22 +93,27 @@ export async function POST(req: NextRequest) {
                         orders: {
                             create: {
                                 items: {
-                                    create: {
-                                        productId,
-                                        priceInPence: pricePaidInPence,
-                                        quantity,
-                                        colour,
-                                    },
+                                    create: cart.items.map((item) => ({
+                                        productId: item.productId,
+                                        priceInPence: item.price,
+                                        quantity: item.quantity,
+                                        colour: item.colour,
+                                    })),
                                 },
-                                shippingAddress: {
-                                    create: {
-                                        line1: shippingAddress?.line1 || "",
-                                        city: shippingAddress?.city || "",
-                                        postalCode:
-                                            shippingAddress?.postal_code || "",
-                                        country: shippingAddress?.country || "",
-                                    },
-                                },
+                                shippingAddress: shippingAddress
+                                    ? {
+                                          create: {
+                                              line1:
+                                                  shippingAddress.line1 || "",
+                                              city: shippingAddress.city || "",
+                                              postalCode:
+                                                  shippingAddress.postal_code ||
+                                                  "",
+                                              country:
+                                                  shippingAddress.country || "",
+                                          },
+                                      }
+                                    : undefined,
                             },
                         },
                     },
@@ -124,6 +134,23 @@ export async function POST(req: NextRequest) {
 
                 console.log(`Created order: ${JSON.stringify(order)}`);
 
+                const products = await Promise.all(
+                    cart.items.map(async (item) => {
+                        const product = await db.product.findUnique({
+                            where: { id: item.productId },
+                        });
+                        return {
+                            ...item,
+                            name: product?.name ?? "Unknown Product",
+                            description:
+                                product?.description ??
+                                "No description available",
+                            imagePath:
+                                product?.imagePath ?? "/default-image-path.jpg",
+                        };
+                    })
+                );
+
                 await resend.emails.send({
                     from: `Support <${process.env.SENDER_EMAIL}>`,
                     to: email,
@@ -134,7 +161,7 @@ export async function POST(req: NextRequest) {
                                 ...order,
                                 pricePaidInPence: totalPriceInPence,
                             }}
-                            product={product}
+                            products={products}
                             downloadVerificationId={""}
                         />
                     ),
@@ -142,9 +169,6 @@ export async function POST(req: NextRequest) {
 
                 return new NextResponse();
             }
-            case "payment_intent.created":
-                console.log(`Payment intent created: ${JSON.stringify(event)}`);
-                return new NextResponse();
             default:
                 console.log(`Unhandled event type: ${event.type}`);
                 return new NextResponse(`Unhandled event type: ${event.type}`, {

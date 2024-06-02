@@ -10,22 +10,28 @@ import {
 import { OrderInformation } from "./components/OrderInformation";
 
 type PurchaseReceiptEmailProps = {
-    product: {
-        name: string;
+    products: {
         imagePath: string;
+        name: string;
         description: string;
-    };
+        quantity: number;
+        colour: string;
+    }[];
     order: { id: string; createdAt: Date; pricePaidInPence: number };
     downloadVerificationId: string;
 };
 
 PurchaseReceiptEmail.PreviewProps = {
-    product: {
-        name: "Product name",
-        description: "Some description",
-        imagePath:
-            "/products/5aba7442-e4a5-4d2e-bfa7-5bd358cdad64-02 - What Is Next.js.jpg",
-    },
+    products: [
+        {
+            name: "Product name",
+            description: "Some description",
+            imagePath:
+                "/products/5aba7442-e4a5-4d2e-bfa7-5bd358cdad64-02 - What Is Next.js.jpg",
+            quantity: 1,
+            colour: "Red",
+        },
+    ],
     order: {
         id: crypto.randomUUID(),
         createdAt: new Date(),
@@ -35,23 +41,28 @@ PurchaseReceiptEmail.PreviewProps = {
 } satisfies PurchaseReceiptEmailProps;
 
 export default function PurchaseReceiptEmail({
-    product,
+    products,
     order,
     downloadVerificationId,
 }: PurchaseReceiptEmailProps) {
     return (
         <Html>
-            <Preview>Download {product.name} and view receipt</Preview>
+            <Preview>Download your products and view receipt</Preview>
             <Tailwind>
                 <Head />
                 <Body className="font-sans bg-white">
                     <Container className="max-w-xl">
                         <Heading>Purchase Receipt</Heading>
-                        <OrderInformation
-                            order={order}
-                            product={product}
-                            downloadVerificationId={downloadVerificationId}
-                        />
+                        {products.map((product, index) => (
+                            <OrderInformation
+                                key={index}
+                                order={order}
+                                product={product}
+                                quantity={product.quantity}
+                                colour={product.colour}
+                                downloadVerificationId={downloadVerificationId}
+                            />
+                        ))}
                     </Container>
                 </Body>
             </Tailwind>
