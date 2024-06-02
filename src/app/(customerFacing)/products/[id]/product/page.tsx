@@ -73,8 +73,8 @@ export default async function ProductPage({
                             productPrice={product.priceInPence}
                             colours={serializableProduct.colours}
                             availableQuantity={product.availableQuantity}
-                            imagePath={product.imagePath} // Pass imagePath
-                            name={product.name} // Pass name
+                            imagePath={product.imagePath}
+                            name={product.name}
                         />
                     </div>
                 </div>

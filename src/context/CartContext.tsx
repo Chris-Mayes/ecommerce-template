@@ -7,7 +7,6 @@ import {
     ReactNode,
     useEffect,
 } from "react";
-import { useLocalStorage } from "usehooks-ts";
 
 interface CartItem {
     productId: string;
@@ -28,34 +27,26 @@ interface CartContextType {
         quantity: number
     ) => void;
     clearCart: () => void;
+    getTotalQuantityForProduct: (productId: string) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-    const [cart, setCart] = useLocalStorage<CartItem[]>("cart", []);
+    const [cart, setCart] = useState<CartItem[]>(() => {
+        if (typeof window !== "undefined") {
+            const storedCart = localStorage.getItem("cart");
+            return storedCart ? JSON.parse(storedCart) : [];
+        }
+        return [];
+    });
+
+    useEffect(() => {
+        localStorage.setItem("cart", JSON.stringify(cart));
+    }, [cart]);
 
     const addToCart = (item: CartItem) => {
-        setCart((prevCart) => {
-            const existingItem = prevCart.find(
-                (cartItem) =>
-                    cartItem.productId === item.productId &&
-                    cartItem.colour === item.colour
-            );
-            if (existingItem) {
-                return prevCart.map((cartItem) =>
-                    cartItem.productId === item.productId &&
-                    cartItem.colour === item.colour
-                        ? {
-                              ...cartItem,
-                              quantity: cartItem.quantity + item.quantity,
-                          }
-                        : cartItem
-                );
-            } else {
-                return [...prevCart, item];
-            }
-        });
+        setCart((prevCart) => [...prevCart, item]);
     };
 
     const removeFromCart = (productId: string, colour: string) => {
@@ -83,6 +74,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     const clearCart = () => {
         setCart([]);
+        localStorage.removeItem("cart");
+    };
+
+    const getTotalQuantityForProduct = (productId: string) => {
+        return cart
+            .filter((item) => item.productId === productId)
+            .reduce((total, item) => total + item.quantity, 0);
     };
 
     return (
@@ -93,6 +91,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 removeFromCart,
                 updateCartItemQuantity,
                 clearCart,
+                getTotalQuantityForProduct,
             }}
         >
             {children}

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Stripe from "stripe";
 import { useEffect } from "react";
-import { useCart } from "@/context/CartContext"; // Ensure you import your CartContext
+import { useCart } from "@/context/CartContext";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 

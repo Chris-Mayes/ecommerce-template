@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
-import db from "@/db/db"; // Ensure you have this import to interact with your database
+import db from "@/db/db";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
@@ -11,7 +11,6 @@ export default async function handler(
     if (req.method === "POST") {
         const { cart } = req.body;
 
-        // Define the type for cart items
         type CartItem = {
             productId: string;
             quantity: number;
@@ -26,7 +25,6 @@ export default async function handler(
         );
 
         try {
-            // Store the cart details in the database and get an ID
             const cartDetails = await db.cart.create({
                 data: {
                     items: {
@@ -44,13 +42,13 @@ export default async function handler(
             const paymentIntent = await stripe.paymentIntents.create({
                 amount,
                 currency: "GBP",
-                metadata: { cartId: cartDetails.id }, // Store only the cart ID in the metadata
+                metadata: { cartId: cartDetails.id },
             });
 
-            console.log("Payment intent created:", paymentIntent); // Debugging
+            console.log("Payment intent created:", paymentIntent);
             res.status(200).json({ clientSecret: paymentIntent.client_secret });
         } catch (error) {
-            console.error("Error creating payment intent:", error); // Debugging
+            console.error("Error creating payment intent:", error);
             res.status(500).json({ error: "Internal Server Error" });
         }
     } else {

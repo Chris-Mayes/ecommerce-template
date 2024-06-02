@@ -42,7 +42,11 @@ type CheckoutFormProps = {
 };
 
 export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
-    const { removeFromCart, updateCartItemQuantity } = useCart();
+    const {
+        removeFromCart,
+        updateCartItemQuantity,
+        getTotalQuantityForProduct,
+    } = useCart();
 
     const totalPrice = cart.reduce(
         (total, item) => total + item.productPrice * item.quantity,
@@ -52,10 +56,31 @@ export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
     const handleQuantityChange = (
         productId: string,
         colour: string,
-        quantity: number
+        newQuantity: number,
+        availableQuantity: number
     ) => {
-        if (quantity > 0) {
-            updateCartItemQuantity(productId, colour, quantity);
+        const currentTotalQuantity = getTotalQuantityForProduct(productId);
+        const itemInCart = cart.find(
+            (item) => item.productId === productId && item.colour === colour
+        );
+
+        if (!itemInCart) return;
+
+        const itemCurrentQuantity = itemInCart.quantity;
+        const otherConfigurationsQuantity =
+            currentTotalQuantity - itemCurrentQuantity;
+
+        if (
+            newQuantity > 0 &&
+            newQuantity + otherConfigurationsQuantity <= availableQuantity
+        ) {
+            updateCartItemQuantity(productId, colour, newQuantity);
+        } else if (newQuantity > 0) {
+            alert(
+                `Cannot add more than ${availableQuantity} items of this product.`
+            );
+        } else {
+            updateCartItemQuantity(productId, colour, newQuantity); // Allow decreasing quantity
         }
     };
 
@@ -77,15 +102,25 @@ export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold">{item.name}</h1>
+                            <div>Colour: {item.colour}</div>
+                            <div>
+                                Price: £
+                                {(
+                                    (item.productPrice * item.quantity) /
+                                    100
+                                ).toFixed(2)}
+                            </div>
                             <div className="flex items-center">
                                 <Button
                                     onClick={() =>
                                         handleQuantityChange(
                                             item.productId,
                                             item.colour,
-                                            item.quantity - 1
+                                            item.quantity - 1,
+                                            20 // Assuming 20 is the available quantity, replace it with the actual available quantity if needed
                                         )
                                     }
+                                    disabled={item.quantity <= 1}
                                 >
                                     -
                                 </Button>
@@ -95,25 +130,27 @@ export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
                                         handleQuantityChange(
                                             item.productId,
                                             item.colour,
-                                            item.quantity + 1
+                                            item.quantity + 1,
+                                            20 // Assuming 20 is the available quantity, replace it with the actual available quantity if needed
                                         )
                                     }
                                 >
                                     +
                                 </Button>
                             </div>
-                            <div>Colour: {item.colour}</div>
-                            <div>
-                                Price: £
-                                {(
-                                    (item.productPrice * item.quantity) /
-                                    100
-                                ).toFixed(2)}
-                            </div>
                             <Button
-                                onClick={() =>
-                                    removeFromCart(item.productId, item.colour)
-                                }
+                                onClick={() => {
+                                    if (
+                                        confirm(
+                                            "Are you sure you want to remove this item from the cart?"
+                                        )
+                                    ) {
+                                        removeFromCart(
+                                            item.productId,
+                                            item.colour
+                                        );
+                                    }
+                                }}
                                 className="mt-2"
                             >
                                 Remove
@@ -122,7 +159,7 @@ export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
                     </div>
                 ))}
             </div>
-            <div className="text-right text-lg font-bold">
+            <div className="text-left text-lg font-bold">
                 Total: £{(totalPrice / 100).toFixed(2)}
             </div>
             <Elements stripe={stripePromise} options={{ clientSecret }}>
@@ -166,11 +203,10 @@ const PaymentForm = ({ totalPrice }: { totalPrice: number }) => {
                 setErrorMessage("An unknown error occurred");
             }
         } else {
-            // Clear the cart and redirect to success page
             clearCart();
             setTimeout(() => {
                 router.push("/stripe/purchase-success");
-            }, 500); // Add a slight delay to ensure cart is cleared before redirect
+            }, 500);
         }
         setIsLoading(false);
     }
