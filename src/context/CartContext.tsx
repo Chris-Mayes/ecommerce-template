@@ -22,6 +22,11 @@ interface CartContextType {
     cart: CartItem[];
     addToCart: (item: CartItem) => void;
     removeFromCart: (productId: string, colour: string) => void;
+    updateCartItemQuantity: (
+        productId: string,
+        colour: string,
+        quantity: number
+    ) => void;
     clearCart: () => void;
 }
 
@@ -31,7 +36,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [cart, setCart] = useLocalStorage<CartItem[]>("cart", []);
 
     const addToCart = (item: CartItem) => {
-        setCart((prevCart) => [...prevCart, item]);
+        setCart((prevCart) => {
+            const existingItem = prevCart.find(
+                (cartItem) =>
+                    cartItem.productId === item.productId &&
+                    cartItem.colour === item.colour
+            );
+            if (existingItem) {
+                return prevCart.map((cartItem) =>
+                    cartItem.productId === item.productId &&
+                    cartItem.colour === item.colour
+                        ? {
+                              ...cartItem,
+                              quantity: cartItem.quantity + item.quantity,
+                          }
+                        : cartItem
+                );
+            } else {
+                return [...prevCart, item];
+            }
+        });
     };
 
     const removeFromCart = (productId: string, colour: string) => {
@@ -43,13 +67,33 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         );
     };
 
+    const updateCartItemQuantity = (
+        productId: string,
+        colour: string,
+        quantity: number
+    ) => {
+        setCart((prevCart) =>
+            prevCart.map((item) =>
+                item.productId === productId && item.colour === colour
+                    ? { ...item, quantity }
+                    : item
+            )
+        );
+    };
+
     const clearCart = () => {
         setCart([]);
     };
 
     return (
         <CartContext.Provider
-            value={{ cart, addToCart, removeFromCart, clearCart }}
+            value={{
+                cart,
+                addToCart,
+                removeFromCart,
+                updateCartItemQuantity,
+                clearCart,
+            }}
         >
             {children}
         </CartContext.Provider>

@@ -42,12 +42,22 @@ type CheckoutFormProps = {
 };
 
 export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
-    const { removeFromCart } = useCart();
+    const { removeFromCart, updateCartItemQuantity } = useCart();
 
     const totalPrice = cart.reduce(
         (total, item) => total + item.productPrice * item.quantity,
         0
     );
+
+    const handleQuantityChange = (
+        productId: string,
+        colour: string,
+        quantity: number
+    ) => {
+        if (quantity > 0) {
+            updateCartItemQuantity(productId, colour, quantity);
+        }
+    };
 
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
@@ -67,7 +77,31 @@ export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold">{item.name}</h1>
-                            <div>Quantity: {item.quantity}</div>
+                            <div className="flex items-center">
+                                <Button
+                                    onClick={() =>
+                                        handleQuantityChange(
+                                            item.productId,
+                                            item.colour,
+                                            item.quantity - 1
+                                        )
+                                    }
+                                >
+                                    -
+                                </Button>
+                                <span className="mx-2">{item.quantity}</span>
+                                <Button
+                                    onClick={() =>
+                                        handleQuantityChange(
+                                            item.productId,
+                                            item.colour,
+                                            item.quantity + 1
+                                        )
+                                    }
+                                >
+                                    +
+                                </Button>
+                            </div>
                             <div>Colour: {item.colour}</div>
                             <div>
                                 Price: £
@@ -102,6 +136,7 @@ const PaymentForm = ({ totalPrice }: { totalPrice: number }) => {
     const stripe = useStripe();
     const elements = useElements();
     const router = useRouter();
+    const { clearCart } = useCart();
 
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -131,10 +166,12 @@ const PaymentForm = ({ totalPrice }: { totalPrice: number }) => {
                 setErrorMessage("An unknown error occurred");
             }
         } else {
-            // Redirect to success page
-            router.push("/stripe/purchase-success");
+            // Clear the cart and redirect to success page
+            clearCart();
+            setTimeout(() => {
+                router.push("/stripe/purchase-success");
+            }, 500); // Add a slight delay to ensure cart is cleared before redirect
         }
-
         setIsLoading(false);
     }
 

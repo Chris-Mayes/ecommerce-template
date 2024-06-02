@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import { useCart } from "@/context/CartContext"; // Import the cart context
+import { useCart } from "@/context/CartContext";
 
 interface Colour {
     id: string;
@@ -15,8 +15,8 @@ interface ProductPurchaseFormProps {
     productPrice: number;
     colours: Colour[];
     availableQuantity: number;
-    imagePath: string; // Add imagePath
-    name: string; // Add name
+    imagePath: string;
+    name: string;
 }
 
 export default function ProductPurchaseForm({
@@ -24,12 +24,12 @@ export default function ProductPurchaseForm({
     productPrice,
     colours,
     availableQuantity,
-    imagePath, // Add imagePath
-    name, // Add name
+    imagePath,
+    name,
 }: ProductPurchaseFormProps) {
     const [quantity, setQuantity] = useState(1);
     const [colour, setColour] = useState(colours[0]?.name || "");
-    const { addToCart } = useCart(); // Use the addToCart function from the context
+    const { cart, addToCart } = useCart();
 
     const handleQuantityChange = (value: number) => {
         if (value > 0 && value <= availableQuantity) {
@@ -46,15 +46,24 @@ export default function ProductPurchaseForm({
     const isAvailable = availableQuantity > 0;
 
     const handleAddToCart = () => {
-        addToCart({
-            productId,
-            quantity,
-            colour,
-            productPrice,
-            imagePath,
-            name,
-        });
-        alert("Product added to cart!");
+        const existingItem = cart.find(
+            (cartItem) =>
+                cartItem.productId === productId && cartItem.colour === colour
+        );
+
+        if (existingItem) {
+            alert("Already in cart");
+        } else {
+            addToCart({
+                productId,
+                quantity,
+                colour,
+                productPrice,
+                imagePath,
+                name,
+            });
+            alert("Product added to cart!");
+        }
     };
 
     return (
