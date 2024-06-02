@@ -107,3 +107,7 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
     -moz-appearance: textfield; /* For Firefox */
 }
+
+.custom-icon-size {
+    font-size: 1.3rem;
+}

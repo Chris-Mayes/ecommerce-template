@@ -4,19 +4,22 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ComponentProps, ReactNode } from "react";
+import BasketCount from "@/components/BasketCount";
 
 export function Nav({ children }: { children: ReactNode }) {
     return (
-        <nav className="nav-banner bg-primary text-primary-foreground">
-            <div className="flex flex-1 justify-start space-x-4 items-start">
-                {children}
+        <nav className="nav-banner bg-primary text-primary-foreground flex items-center justify-between px-4">
+            <div className="flex space-x-4 items-center">{children}</div>
+            <div className="flex items-center ml-auto">
+                <BasketCount />
             </div>
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            {/* <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <img src="/logo2.png" alt="Logo" className="h-56 w-auto" />
-            </div>
+            </div> */}
         </nav>
     );
 }
+
 export function NavLink(props: Omit<ComponentProps<typeof Link>, "className">) {
     const pathname = usePathname();
     return (
