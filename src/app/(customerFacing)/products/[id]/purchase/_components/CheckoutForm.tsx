@@ -42,47 +42,10 @@ type CheckoutFormProps = {
 };
 
 export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
-    const {
-        removeFromCart,
-        updateCartItemQuantity,
-        getTotalQuantityForProduct,
-    } = useCart();
-
     const totalPrice = cart.reduce(
         (total, item) => total + item.productPrice * item.quantity,
         0
     );
-
-    const handleQuantityChange = (
-        productId: string,
-        colour: string,
-        newQuantity: number,
-        availableQuantity: number
-    ) => {
-        const currentTotalQuantity = getTotalQuantityForProduct(productId);
-        const itemInCart = cart.find(
-            (item) => item.productId === productId && item.colour === colour
-        );
-
-        if (!itemInCart) return;
-
-        const itemCurrentQuantity = itemInCart.quantity;
-        const otherConfigurationsQuantity =
-            currentTotalQuantity - itemCurrentQuantity;
-
-        if (
-            newQuantity > 0 &&
-            newQuantity + otherConfigurationsQuantity <= availableQuantity
-        ) {
-            updateCartItemQuantity(productId, colour, newQuantity);
-        } else if (newQuantity > 0) {
-            alert(
-                `Cannot add more than ${availableQuantity} items of this product.`
-            );
-        } else {
-            updateCartItemQuantity(productId, colour, newQuantity); // Allow decreasing quantity
-        }
-    };
 
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
@@ -95,9 +58,9 @@ export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
                         <div className="relative w-1/4 h-56">
                             <Image
                                 src={item.imagePath}
-                                layout="fill"
-                                objectFit="contain"
                                 alt={item.name}
+                                fill
+                                style={{ objectFit: "contain" }}
                             />
                         </div>
                         <div>
@@ -110,51 +73,6 @@ export function CheckoutForm({ cart, clientSecret }: CheckoutFormProps) {
                                     100
                                 ).toFixed(2)}
                             </div>
-                            <div className="flex items-center">
-                                <Button
-                                    onClick={() =>
-                                        handleQuantityChange(
-                                            item.productId,
-                                            item.colour,
-                                            item.quantity - 1,
-                                            20 // Assuming 20 is the available quantity, replace it with the actual available quantity if needed
-                                        )
-                                    }
-                                    disabled={item.quantity <= 1}
-                                >
-                                    -
-                                </Button>
-                                <span className="mx-2">{item.quantity}</span>
-                                <Button
-                                    onClick={() =>
-                                        handleQuantityChange(
-                                            item.productId,
-                                            item.colour,
-                                            item.quantity + 1,
-                                            20 // Assuming 20 is the available quantity, replace it with the actual available quantity if needed
-                                        )
-                                    }
-                                >
-                                    +
-                                </Button>
-                            </div>
-                            <Button
-                                onClick={() => {
-                                    if (
-                                        confirm(
-                                            "Are you sure you want to remove this item from the cart?"
-                                        )
-                                    ) {
-                                        removeFromCart(
-                                            item.productId,
-                                            item.colour
-                                        );
-                                    }
-                                }}
-                                className="mt-2"
-                            >
-                                Remove
-                            </Button>
                         </div>
                     </div>
                 ))}
@@ -215,42 +133,30 @@ const PaymentForm = ({ totalPrice }: { totalPrice: number }) => {
         <form onSubmit={handleSubmit}>
             <Card>
                 <CardHeader>
-                    <CardTitle>Checkout</CardTitle>
-                    {errorMessage && (
-                        <CardDescription className="text-destructive">
-                            {errorMessage}
-                        </CardDescription>
-                    )}
+                    <CardTitle>Payment</CardTitle>
+                    <CardDescription>
+                        Enter your payment details below.
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <PaymentElement />
-                    <div className="mt-4">
-                        <LinkAuthenticationElement
-                            onChange={(e) => setEmail(e.value.email)}
-                        />
-                    </div>
-                    <div>
-                        <AddressElement
-                            options={{
-                                mode: "shipping",
-                            }}
-                        />
-                    </div>
+                    <LinkAuthenticationElement
+                        id="link-authentication-element"
+                        onChange={(e) => setEmail(e.value.email)}
+                    />
+                    <PaymentElement id="payment-element" />
+                    <AddressElement options={{ mode: "shipping" }} />
                 </CardContent>
                 <CardFooter>
-                    <Button
-                        className="w-full"
-                        size="lg"
-                        disabled={
-                            stripe == null || elements == null || isLoading
-                        }
-                    >
+                    <Button type="submit" disabled={!stripe || isLoading}>
                         {isLoading
-                            ? "Purchasing..."
-                            : `Purchase - £${(totalPrice / 100).toFixed(2)}`}
+                            ? "Processing..."
+                            : `Pay £${(totalPrice / 100).toFixed(2)}`}
                     </Button>
                 </CardFooter>
             </Card>
+            {errorMessage && (
+                <div className="text-red-500 mt-4">{errorMessage}</div>
+            )}
         </form>
     );
 };
