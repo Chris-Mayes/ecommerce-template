@@ -83,23 +83,51 @@ model Colour {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
-model Cart {
-  id        String      @id @default(uuid())
-  items     CartItem[]
+model ActiveCart {
+  id          String          @id @default(uuid())
+  userId      String?
+  sessionId   String?
+  items       ActiveCartItem[]
   totalAmount Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  isArchived  Boolean         @default(false)
+
+  @@unique([userId, sessionId])
 }
 
-model CartItem {
-  id        String   @id @default(uuid())
+model ActiveCartItem {
+  id        String      @id @default(uuid())
   cartId    String
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cart      ActiveCart  @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productId String
   quantity  Int
   colour    String
   price     Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
+model ArchivedCart {
+  id          String            @id @default(uuid())
+  userId      String?
+  sessionId   String?
+  items       ArchivedCartItem[]
+  totalAmount Int
+  createdAt   DateTime
+  archivedAt  DateTime          @default(now())
+
+  @@unique([userId, sessionId])
+}
+
+model ArchivedCartItem {
+  id        String         @id @default(uuid())
+  cartId    String
+  cart      ArchivedCart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  quantity  Int
+  colour    String
+  price     Int
+  createdAt DateTime
+  updatedAt DateTime
+}

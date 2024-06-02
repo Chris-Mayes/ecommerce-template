@@ -16,7 +16,7 @@ export default async function SuccessPage({
 
     if (paymentIntent.metadata.cartId == null) return notFound();
 
-    const cart = await db.cart.findUnique({
+    const cart = await db.activeCart.findUnique({
         where: { id: paymentIntent.metadata.cartId },
         include: { items: true },
     });
