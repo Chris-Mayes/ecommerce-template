@@ -14,11 +14,11 @@ export default function CartPage() {
         [productId: string]: number;
     }>({});
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
-    const [showConfirm, setShowConfirm] = useState<string | null>(null); // Track which item to confirm removal
-    const [isClient, setIsClient] = useState(false); // State to track if it's client-side
+    const [showConfirm, setShowConfirm] = useState<string | null>(null);
+    const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
-        setIsClient(true); // Set isClient to true when the component is mounted on the client side
+        setIsClient(true);
     }, []);
 
     useEffect(() => {
@@ -84,7 +84,7 @@ export default function CartPage() {
 
     const handleRemoveItem = (productId: string, colour: string) => {
         removeFromCart(productId, colour);
-        setShowConfirm(null); // Close the confirmation dialog
+        setShowConfirm(null);
     };
 
     const totalPrice = cart.reduce(
@@ -93,7 +93,7 @@ export default function CartPage() {
     );
 
     if (!isClient) {
-        return null; // Render nothing on the server side
+        return null;
     }
 
     return (

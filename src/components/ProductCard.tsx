@@ -1,4 +1,3 @@
-import { formatCurrency } from "@/lib/formatters";
 import {
     Card,
     CardContent,
@@ -7,7 +6,6 @@ import {
     CardHeader,
     CardTitle,
 } from "./ui/card";
-import { Button } from "./ui/button";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -28,9 +26,17 @@ export function ProductCard({
 }: ProductCardProps) {
     return (
         <Card className="flex overflow-hidden flex-col">
-            <div className="relative w-full aspect-w-1 aspect-h-1">
-                <Image src={imagePath} fill alt={name} />
-            </div>
+            <Link
+                href={`/products/${id}/product`}
+                className="relative w-full aspect-w-1 aspect-h-1"
+            >
+                <Image
+                    src={imagePath}
+                    fill
+                    alt={name}
+                    className="cursor-pointer"
+                />
+            </Link>
             <CardHeader>
                 <CardTitle>{name}</CardTitle>
                 <CardDescription>
@@ -40,14 +46,7 @@ export function ProductCard({
             <CardContent className="flex-grow">
                 <p className="line-clamp-4">{description}</p>
             </CardContent>
-            <CardFooter>
-                <Button asChild size="lg" className="w-full --primary-buttons">
-                    <Link href={`/products/${id}/product`}>Configure</Link>
-                </Button>
-                {/* <Button asChild size="lg" className="w-full --primary-buttons">
-                    <Link href={`/products/${id}/purchase`}>Purchase</Link>
-                </Button> */}
-            </CardFooter>
+            {/* Remove the CardFooter or repurpose it if needed */}
         </Card>
     );
 }
@@ -69,9 +68,9 @@ export function ProductCardSkeleton() {
                 <div className="w-full h-4 rounded-full bg-gray-300" />
                 <div className="w-3/4 h-4 rounded-full bg-gray-300" />
             </CardContent>
-            <CardFooter>
+            {/* <CardFooter>
                 <Button className="w-full" disabled size="lg"></Button>
-            </CardFooter>
+            </CardFooter> */}
         </Card>
     );
 }

@@ -10,11 +10,11 @@ import Image from "next/image";
 export default function CheckoutPage() {
     const { cart } = useCart();
     const [clientSecret, setClientSecret] = useState<string | null>(null);
-    const [isClient, setIsClient] = useState(false); // State to track if it's client-side
+    const [isClient, setIsClient] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-        setIsClient(true); // Set isClient to true when the component is mounted on the client side
+        setIsClient(true);
     }, []);
 
     useEffect(() => {
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
     }, [isClient, cart]);
 
     if (!isClient) {
-        return null; // Render nothing on the server side
+        return null;
     }
 
     if (cart.length === 0) {

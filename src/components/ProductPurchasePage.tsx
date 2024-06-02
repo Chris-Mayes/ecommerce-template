@@ -51,7 +51,7 @@ export default function ProductPurchaseForm({
         setAlertMessage(message);
         setTimeout(() => {
             setAlertMessage(null);
-        }, 4000); // Hide alert after 3 seconds
+        }, 4000); // Hide alert
     };
 
     const handleAddToCart = () => {
