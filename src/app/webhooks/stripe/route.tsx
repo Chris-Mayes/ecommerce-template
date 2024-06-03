@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
                 console.log(`Charge succeeded: ${JSON.stringify(charge)}`);
 
-                const cart = await db.activeCart.findUnique({
+                const cart = await db.cart.findUnique({
                     where: { id: cartId },
                     include: { items: true },
                 });

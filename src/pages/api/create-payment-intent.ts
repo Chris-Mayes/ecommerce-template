@@ -9,25 +9,26 @@ export default async function handler(
     res: NextApiResponse
 ) {
     if (req.method === "POST") {
-        const { cart, userId, sessionId } = req.body;
+        const { cart } = req.body;
 
-        const amount = cart.reduce(
-            (total: number, item: any) =>
+        type CartItem = {
+            productId: string;
+            quantity: number;
+            colour: string;
+            productPrice: number;
+        };
+
+        const amount = (cart as CartItem[]).reduce(
+            (total: number, item: CartItem) =>
                 total + item.productPrice * item.quantity,
             0
         );
 
         try {
-            const cartDetails = await db.activeCart.upsert({
-                where: {
-                    userId_sessionId: {
-                        userId: userId ?? "",
-                        sessionId: sessionId ?? "",
-                    },
-                },
-                update: {
+            const cartDetails = await db.cart.create({
+                data: {
                     items: {
-                        create: cart.map((item: any) => ({
+                        create: cart.map((item: CartItem) => ({
                             productId: item.productId,
                             quantity: item.quantity,
                             colour: item.colour,
@@ -35,19 +36,6 @@ export default async function handler(
                         })),
                     },
                     totalAmount: amount,
-                },
-                create: {
-                    userId: userId ?? "",
-                    sessionId: sessionId ?? "",
-                    totalAmount: amount,
-                    items: {
-                        create: cart.map((item: any) => ({
-                            productId: item.productId,
-                            quantity: item.quantity,
-                            colour: item.colour,
-                            price: item.productPrice,
-                        })),
-                    },
                 },
             });
 
@@ -57,6 +45,7 @@ export default async function handler(
                 metadata: { cartId: cartDetails.id },
             });
 
+            console.log("Payment intent created:", paymentIntent);
             res.status(200).json({ clientSecret: paymentIntent.client_secret });
         } catch (error) {
             console.error("Error creating payment intent:", error);
