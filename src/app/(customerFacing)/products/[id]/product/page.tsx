@@ -1,6 +1,6 @@
 import db from "@/db/db";
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import ProductImageCarousel from "@/components/ui/productPageCarousel";
 import ProductPurchaseForm from "../../../../../components/ProductPurchasePage";
 import { formatCurrency } from "@/lib/formatters";
 
@@ -11,7 +11,7 @@ export default async function ProductPage({
 }) {
     const product = await db.product.findUnique({
         where: { id },
-        include: { colours: true },
+        include: { colours: true, images: true },
     });
 
     if (!product) return notFound();
@@ -22,21 +22,22 @@ export default async function ProductPage({
             id: colour.id,
             name: colour.name,
         })),
+        images: product.images.map((image) => ({
+            url: image.url,
+        })),
     };
 
     return (
-        <div className="p-4 max-w-5xl pt-20 mx-auto">
+        <div className="p-0 max-w-5xl pt-20 mx-auto">
             <div className="flex flex-col lg:flex-row w-full">
-                <div className="relative w-full lg:w-1/2 h-112 mb-4 lg:mb-0">
-                    <Image
-                        src={product.imagePath}
-                        layout="fill"
-                        objectFit="contain"
-                        alt={product.name}
+                <div className="relative w-full lg:w-1/2 mb-4 lg:mb-0">
+                    <ProductImageCarousel
+                        images={serializableProduct.images}
+                        mainImageAlt={product.name}
                     />
                 </div>
 
-                <div className="flex flex-col w-full lg:w-1/2 pl-0 lg:pl-12 negative-mt-2 justify-between">
+                <div className="flex flex-col w-full lg:w-1/2 pl-0 lg:pl-12 lg:ml-6 negative-mt-6 justify-between pt-6">
                     <div className="flex mb-4">
                         <h1 className="text-2xl font-bold text-left">
                             {product.name}
@@ -66,14 +67,17 @@ export default async function ProductPage({
                         </div>
                     </div>
 
-                    <div className="mt-auto pt-4">
+                    <div className="mt-auto pt-9">
                         <p>Available Quantity: {product.availableQuantity}</p>
                         <ProductPurchaseForm
                             productId={id}
                             productPrice={product.priceInPence}
                             colours={serializableProduct.colours}
                             availableQuantity={product.availableQuantity}
-                            imagePath={product.imagePath}
+                            imagePath={
+                                product.images[0]?.url ??
+                                "/default-image-path.jpg"
+                            }
                             name={product.name}
                         />
                     </div>

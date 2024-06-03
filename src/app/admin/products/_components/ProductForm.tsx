@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,22 +9,41 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
 import { addProduct, updateProduct } from "../../_actions/products";
 import { useFormState, useFormStatus } from "react-dom";
-import { Product, Colour } from "@prisma/client";
+import { Product, Colour, Image as ImageType } from "@prisma/client";
 import Image from "next/image";
 
 type ProductWithColours = Product & {
     colours: Colour[];
+    images: ImageType[];
 };
+
+type FormErrors =
+    | {
+          [key: string]: string[] | undefined;
+      }
+    | {
+          name?: string[];
+          description?: string[];
+          priceInPence?: string[];
+          availableQuantity?: string[];
+          lengthInMm?: string[];
+          widthInMm?: string[];
+          heightInMm?: string[];
+          file?: string[];
+          colours?: string[];
+          images?: string[];
+      };
 
 export function ProductForm({
     product,
 }: {
     product?: ProductWithColours | null;
 }) {
-    const [error, action] = useFormState(
+    const [error, action, state] = useFormState(
         product == null ? addProduct : updateProduct.bind(null, product.id),
         {}
-    );
+    ) as [FormErrors, (formData: FormData) => void, unknown];
+
     const [priceInPence, setPriceInPence] = useState<number | undefined>(
         product?.priceInPence
     );
@@ -43,6 +63,31 @@ export function ProductForm({
     const [heightInMm, setHeightInMm] = useState<number | undefined>(
         product?.heightInMm
     );
+    const [images, setImages] = useState<File[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>(
+        product?.images?.map((image) => image.url) || []
+    );
+
+    useEffect(() => {
+        return () => {
+            imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+        };
+    }, [imagePreviews]);
+
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        setImages((prev) => [...prev, ...acceptedFiles]);
+        const newPreviews = acceptedFiles.map((file) =>
+            URL.createObjectURL(file)
+        );
+        setImagePreviews((prev) => [...prev, ...newPreviews]);
+    }, []);
+
+    const { getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        accept: {
+            "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+        },
+    });
 
     const addColour = () => {
         if (newColour && !colours.includes(newColour)) {
@@ -52,7 +97,17 @@ export function ProductForm({
     };
 
     return (
-        <form action={action} className="space-y-8">
+        <form
+            onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                images.forEach((image) => {
+                    formData.append("images", image);
+                });
+                action(formData);
+            }}
+            className="space-y-8"
+        >
             <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
@@ -63,7 +118,9 @@ export function ProductForm({
                     defaultValue={product?.name || ""}
                 />
                 {error.name && (
-                    <div className="text-destructive">{error.name}</div>
+                    <div className="text-destructive">
+                        {error.name.join(", ")}
+                    </div>
                 )}
             </div>
             <div className="space-y-2">
@@ -82,7 +139,9 @@ export function ProductForm({
                     {formatCurrency((priceInPence || 0) / 100)}
                 </div>
                 {error.priceInPence && (
-                    <div className="text-destructive">{error.priceInPence}</div>
+                    <div className="text-destructive">
+                        {error.priceInPence.join(", ")}
+                    </div>
                 )}
             </div>
             <div className="space-y-2">
@@ -94,7 +153,9 @@ export function ProductForm({
                     defaultValue={product?.description}
                 />
                 {error.description && (
-                    <div className="text-destructive">{error.description}</div>
+                    <div className="text-destructive">
+                        {error.description.join(", ")}
+                    </div>
                 )}
             </div>
             <div className="space-y-2">
@@ -109,6 +170,11 @@ export function ProductForm({
                         setLengthInMm(Number(e.target.value) || undefined)
                     }
                 />
+                {error.lengthInMm && (
+                    <div className="text-destructive">
+                        {error.lengthInMm.join(", ")}
+                    </div>
+                )}
             </div>
             <div className="space-y-2">
                 <Label htmlFor="widthInMm">Width (mm)</Label>
@@ -122,6 +188,11 @@ export function ProductForm({
                         setWidthInMm(Number(e.target.value) || undefined)
                     }
                 />
+                {error.widthInMm && (
+                    <div className="text-destructive">
+                        {error.widthInMm.join(", ")}
+                    </div>
+                )}
             </div>
             <div className="space-y-2">
                 <Label htmlFor="heightInMm">Height (mm)</Label>
@@ -135,6 +206,11 @@ export function ProductForm({
                         setHeightInMm(Number(e.target.value) || undefined)
                     }
                 />
+                {error.heightInMm && (
+                    <div className="text-destructive">
+                        {error.heightInMm.join(", ")}
+                    </div>
+                )}
             </div>
             <div className="space-y-2">
                 <Label htmlFor="file">File</Label>
@@ -150,27 +226,35 @@ export function ProductForm({
                     </div>
                 )}
                 {error.file && (
-                    <div className="text-destructive">{error.file}</div>
+                    <div className="text-destructive">
+                        {error.file.join(", ")}
+                    </div>
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="image">Image</Label>
-                <Input
-                    type="file"
-                    id="image"
-                    name="image"
-                    required={product == null}
-                />
-                {product != null && (
-                    <Image
-                        src={product.imagePath}
-                        height="400"
-                        width="400"
-                        alt="Product Image"
-                    />
-                )}
-                {error.image && (
-                    <div className="text-destructive">{error.image}</div>
+                <Label htmlFor="images">Images</Label>
+                <div {...getRootProps({ className: "dropzone" })}>
+                    <input {...getInputProps()} />
+                    <p>
+                        Drag 'n' drop some files here, or click to select files
+                    </p>
+                </div>
+                <div className="flex space-x-2 mt-2">
+                    {imagePreviews.map((src, index) => (
+                        <Image
+                            key={index}
+                            src={src}
+                            height="100"
+                            width="100"
+                            alt="Product Image Preview"
+                            className="border p-1"
+                        />
+                    ))}
+                </div>
+                {error.images && (
+                    <div className="text-destructive">
+                        {error.images.join(", ")}
+                    </div>
                 )}
             </div>
             <div className="space-y-2">
@@ -228,6 +312,11 @@ export function ProductForm({
                         )
                     }
                 />
+                {error.availableQuantity && (
+                    <div className="text-destructive">
+                        {error.availableQuantity.join(", ")}
+                    </div>
+                )}
             </div>
             <SubmitButton />
         </form>

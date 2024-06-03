@@ -11,19 +11,26 @@ model Product {
   id                     String    @id @default(uuid())
   name                   String
   priceInPence           Int
-  filePath               String
-  imagePath              String
   description            String
   lengthInMm             Int
   widthInMm              Int
   heightInMm             Int
   isAvailableForPurchase Boolean   @default(true)
   availableQuantity      Int
+  filePath               String 
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
   orders                 OrderItem[]
   downloadVerifications  DownloadVerification[]
   colours                Colour[]
+  images                 Image[]
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model User {

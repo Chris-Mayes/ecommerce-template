@@ -27,12 +27,13 @@ export default async function SuccessPage({
         cart.items.map(async (item) => {
             const product = await db.product.findUnique({
                 where: { id: item.productId },
+                include: { images: true },
             });
             return {
                 ...item,
                 name: product?.name ?? "Unknown Product",
                 description: product?.description ?? "No description available",
-                imagePath: product?.imagePath ?? "/default-image-path.jpg",
+                imagePath: product?.images[0]?.url ?? "/default-image-path.jpg",
             };
         })
     );

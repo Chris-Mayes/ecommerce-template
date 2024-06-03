@@ -138,6 +138,7 @@ export async function POST(req: NextRequest) {
                     cart.items.map(async (item) => {
                         const product = await db.product.findUnique({
                             where: { id: item.productId },
+                            include: { images: true },
                         });
                         return {
                             ...item,
@@ -146,7 +147,8 @@ export async function POST(req: NextRequest) {
                                 product?.description ??
                                 "No description available",
                             imagePath:
-                                product?.imagePath ?? "/default-image-path.jpg",
+                                product?.images[0]?.url ??
+                                "/default-image-path.jpg",
                         };
                     })
                 );

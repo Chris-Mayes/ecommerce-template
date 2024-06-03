@@ -8,7 +8,8 @@ import { revalidatePath } from "next/cache";
 
 const fileSchema = z.instanceof(File, { message: "Required" });
 const imageSchema = fileSchema.refine(
-    (file) => file.size === 0 || file.type.startsWith("image/")
+    (file) => file.size > 0 && file.type.startsWith("image/"),
+    { message: "Invalid image file" }
 );
 
 const addSchema = z.object({
@@ -20,7 +21,6 @@ const addSchema = z.object({
     widthInMm: z.coerce.number().int().min(1),
     heightInMm: z.coerce.number().int().min(1),
     file: fileSchema.refine((file) => file.size > 0, "Required"),
-    image: imageSchema.refine((file) => file.size > 0, "Required"),
     colours: z.string().refine((val) => {
         try {
             JSON.parse(val);
@@ -32,9 +32,27 @@ const addSchema = z.object({
 });
 
 export async function addProduct(prevState: unknown, formData: FormData) {
-    const result = addSchema.safeParse(Object.fromEntries(formData.entries()));
+    const entries = Object.fromEntries(formData.entries());
+
+    // Process images separately
+    const images = formData
+        .getAll("images")
+        .filter((file) => file instanceof File) as File[];
+
+    // Validate non-image fields
+    const result = addSchema.safeParse(entries);
     if (result.success === false) {
         return result.error.formErrors.fieldErrors;
+    }
+
+    // Validate images
+    for (const image of images) {
+        const imageResult = imageSchema.safeParse(image);
+        if (!imageResult.success) {
+            return {
+                images: imageResult.error.errors.map((err) => err.message),
+            };
+        }
     }
 
     const data = result.data;
@@ -45,11 +63,15 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()));
 
     await fs.mkdir("public/products", { recursive: true });
-    const imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`;
-    await fs.writeFile(
-        `public${imagePath}`,
-        Buffer.from(await data.image.arrayBuffer())
-    );
+    const imagePaths = [];
+    for (const image of images) {
+        const imagePath = `/products/${crypto.randomUUID()}-${image.name}`;
+        await fs.writeFile(
+            `public${imagePath}`,
+            Buffer.from(await image.arrayBuffer())
+        );
+        imagePaths.push(imagePath);
+    }
 
     const product = await db.product.create({
         data: {
@@ -62,7 +84,6 @@ export async function addProduct(prevState: unknown, formData: FormData) {
             widthInMm: data.widthInMm,
             heightInMm: data.heightInMm,
             filePath,
-            imagePath,
         },
     });
 
@@ -70,6 +91,15 @@ export async function addProduct(prevState: unknown, formData: FormData) {
         await db.colour.create({
             data: {
                 name: colour,
+                productId: product.id,
+            },
+        });
+    }
+
+    for (const imagePath of imagePaths) {
+        await db.image.create({
+            data: {
+                url: imagePath,
                 productId: product.id,
             },
         });
@@ -83,7 +113,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 
 const editSchema = addSchema.extend({
     file: fileSchema.optional(),
-    image: imageSchema.optional(),
+    images: z.array(imageSchema).optional(),
 });
 
 export async function updateProduct(
@@ -91,9 +121,27 @@ export async function updateProduct(
     prevState: unknown,
     formData: FormData
 ) {
-    const result = editSchema.safeParse(Object.fromEntries(formData.entries()));
+    const entries = Object.fromEntries(formData.entries());
+
+    // Process images separately
+    const images = formData
+        .getAll("images")
+        .filter((file) => file instanceof File) as File[];
+
+    // Validate non-image fields
+    const result = editSchema.safeParse(entries);
     if (result.success === false) {
         return result.error.formErrors.fieldErrors;
+    }
+
+    // Validate images
+    for (const image of images) {
+        const imageResult = imageSchema.safeParse(image);
+        if (!imageResult.success) {
+            return {
+                images: imageResult.error.errors.map((err) => err.message),
+            };
+        }
     }
 
     const data = result.data;
@@ -112,14 +160,24 @@ export async function updateProduct(
         );
     }
 
-    let imagePath = product.imagePath;
-    if (data.image != null && data.image.size > 0) {
-        await fs.unlink(`public${product.imagePath}`);
-        imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`;
-        await fs.writeFile(
-            `public${imagePath}`,
-            Buffer.from(await data.image.arrayBuffer())
-        );
+    const imagePaths = [];
+    if (images.length > 0) {
+        const existingImages = await db.image.findMany({
+            where: { productId: id },
+        });
+        for (const image of existingImages) {
+            await fs.unlink(`public${image.url}`);
+        }
+        await db.image.deleteMany({ where: { productId: id } });
+
+        for (const image of images) {
+            const imagePath = `/products/${crypto.randomUUID()}-${image.name}`;
+            await fs.writeFile(
+                `public${imagePath}`,
+                Buffer.from(await image.arrayBuffer())
+            );
+            imagePaths.push(imagePath);
+        }
     }
 
     await db.product.update({
@@ -130,7 +188,6 @@ export async function updateProduct(
             priceInPence: data.priceInPence,
             availableQuantity: data.availableQuantity,
             filePath,
-            imagePath,
             lengthInMm: data.lengthInMm,
             widthInMm: data.widthInMm,
             heightInMm: data.heightInMm,
@@ -142,6 +199,15 @@ export async function updateProduct(
         await db.colour.create({
             data: {
                 name: colour,
+                productId: id,
+            },
+        });
+    }
+
+    for (const imagePath of imagePaths) {
+        await db.image.create({
+            data: {
+                url: imagePath,
                 productId: id,
             },
         });
@@ -167,13 +233,23 @@ export async function toggleProductAvailability(
 }
 
 export async function deleteProduct(id: string) {
-    const product = await db.product.delete({ where: { id } });
+    const product = await db.product.findUnique({
+        where: { id },
+        include: { images: true },
+    });
 
     if (product == null) return notFound();
 
     await fs.unlink(product.filePath);
-    await fs.unlink(`public${product.imagePath}`);
+
+    for (const image of product.images) {
+        await fs.unlink(`public${image.url}`);
+    }
+
+    await db.product.delete({ where: { id } });
 
     revalidatePath("/");
     revalidatePath("/products");
+
+    redirect("/admin/products");
 }

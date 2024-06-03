@@ -13,6 +13,9 @@ const getMostPopularProducts = cache(
             where: { isAvailableForPurchase: true },
             orderBy: { orders: { _count: "desc" } },
             take: 6,
+            include: {
+                images: true,
+            },
         });
     },
     ["/", "getMostPopularProducts"],
@@ -24,6 +27,9 @@ const getNewestProducts = cache(() => {
         where: { isAvailableForPurchase: true },
         orderBy: { createdAt: "desc" },
         take: 6,
+        include: {
+            images: true,
+        },
     });
 }, ["/", "getNewestProducts"]);
 
@@ -48,7 +54,7 @@ export default function HomePage() {
 
 type ProductGridSectionProps = {
     title: string;
-    productsFetcher: () => Promise<Product[]>;
+    productsFetcher: () => Promise<(Product & { images: { url: string }[] })[]>;
 };
 
 function ProductGridSection({
@@ -86,9 +92,18 @@ function ProductGridSection({
 async function ProductSuspense({
     productsFetcher,
 }: {
-    productsFetcher: () => Promise<Product[]>;
+    productsFetcher: () => Promise<(Product & { images: { url: string }[] })[]>;
 }) {
-    return (await productsFetcher()).map((product) => (
-        <ProductCard key={product.id} {...product} />
+    const products = await productsFetcher();
+
+    return products.map((product) => (
+        <ProductCard
+            key={product.id}
+            id={product.id}
+            name={product.name}
+            priceInPence={product.priceInPence}
+            description={product.description}
+            images={product.images}
+        />
     ));
 }

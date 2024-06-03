@@ -115,7 +115,7 @@ export default function ProductPurchaseForm({
                     </button>
                 </div>
             </div>
-            <div className="mb-4">
+            <div className="w-2/3">
                 <Label
                     htmlFor="colour"
                     className="block text-sm font-medium text-gray-700"
@@ -139,7 +139,7 @@ export default function ProductPurchaseForm({
             <Button
                 onClick={handleAddToCart}
                 disabled={!isAvailable}
-                className="w-full"
+                className="w-2/3"
             >
                 {isAvailable ? "Add to Cart" : "Out of Stock"}
             </Button>
