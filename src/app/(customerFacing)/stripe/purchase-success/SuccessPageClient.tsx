@@ -50,7 +50,9 @@ export default function SuccessPageClient({
                     </div>
                     <div>
                         <div className="text-lg">
-                            {`£${(item.price / 100).toFixed(2)}`}
+                            {`£${((item.price * item.quantity) / 100).toFixed(
+                                2
+                            )}`}
                         </div>
                         <h1 className="text-2xl font-bold">{item.name}</h1>
                         <div className="line-clamp-3 text-muted-foreground">
