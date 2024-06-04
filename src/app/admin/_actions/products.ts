@@ -88,10 +88,10 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     });
 
     for (const colour of colours) {
-        await db.colour.create({
+        await db.productColour.create({
             data: {
-                name: colour,
                 productId: product.id,
+                globalColourId: colour,
             },
         });
     }
@@ -108,7 +108,12 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     revalidatePath("/");
     revalidatePath("/products");
 
-    redirect("/admin/products");
+    // Use JavaScript redirection for client-side navigation
+    if (typeof window !== "undefined") {
+        window.location.href = "/admin/products";
+    } else {
+        redirect("/admin/products");
+    }
 }
 
 const editSchema = addSchema.extend({
@@ -194,12 +199,12 @@ export async function updateProduct(
         },
     });
 
-    await db.colour.deleteMany({ where: { productId: id } });
+    await db.productColour.deleteMany({ where: { productId: id } });
     for (const colour of colours) {
-        await db.colour.create({
+        await db.productColour.create({
             data: {
-                name: colour,
                 productId: id,
+                globalColourId: colour,
             },
         });
     }
@@ -216,7 +221,12 @@ export async function updateProduct(
     revalidatePath("/");
     revalidatePath("/products");
 
-    redirect("/admin/products");
+    // Use JavaScript redirection for client-side navigation
+    if (typeof window !== "undefined") {
+        window.location.href = "/admin/products";
+    } else {
+        redirect("/admin/products");
+    }
 }
 
 export async function toggleProductAvailability(

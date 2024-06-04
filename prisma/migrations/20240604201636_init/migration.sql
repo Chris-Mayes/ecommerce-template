@@ -3,16 +3,23 @@ CREATE TABLE "Product" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "priceInPence" INTEGER NOT NULL,
-    "filePath" TEXT NOT NULL,
-    "imagePath" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "lengthInMm" INTEGER NOT NULL,
     "widthInMm" INTEGER NOT NULL,
     "heightInMm" INTEGER NOT NULL,
     "isAvailableForPurchase" BOOLEAN NOT NULL DEFAULT true,
     "availableQuantity" INTEGER NOT NULL,
+    "filePath" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "Image" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "url" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
+    CONSTRAINT "Image_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -68,11 +75,18 @@ CREATE TABLE "DownloadVerification" (
 );
 
 -- CreateTable
-CREATE TABLE "Colour" (
+CREATE TABLE "GlobalColour" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
+    "name" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "ProductColour" (
+    "id" TEXT NOT NULL PRIMARY KEY,
     "productId" TEXT NOT NULL,
-    CONSTRAINT "Colour_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "globalColourId" TEXT NOT NULL,
+    CONSTRAINT "ProductColour_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "ProductColour_globalColourId_fkey" FOREIGN KEY ("globalColourId") REFERENCES "GlobalColour" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -92,7 +106,7 @@ CREATE TABLE "CartItem" (
     "colour" TEXT NOT NULL,
     "price" INTEGER NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
+    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "CartItem_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "Cart" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -104,3 +118,6 @@ CREATE UNIQUE INDEX "Order_shippingAddressId_key" ON "Order"("shippingAddressId"
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ShippingAddress_orderId_key" ON "ShippingAddress"("orderId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "GlobalColour_name_key" ON "GlobalColour"("name");

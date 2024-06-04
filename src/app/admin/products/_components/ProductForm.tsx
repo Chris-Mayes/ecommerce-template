@@ -9,11 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
 import { addProduct, updateProduct } from "../../_actions/products";
 import { useFormState, useFormStatus } from "react-dom";
-import { Product, Colour, Image as ImageType } from "@prisma/client";
 import Image from "next/image";
+import { Product, Image as ImageType } from "@prisma/client";
 
 type ProductWithColours = Product & {
-    colours: Colour[];
+    colours: { id: string; globalColour: { id: string; name: string } }[];
     images: ImageType[];
 };
 
@@ -40,9 +40,11 @@ export function ProductForm({
     product?: ProductWithColours | null;
 }) {
     const [error, action, state] = useFormState(
-        product == null ? addProduct : updateProduct.bind(null, product.id),
+        product == null
+            ? addProduct
+            : updateProduct.bind(null, product?.id || ""),
         {}
-    ) as [FormErrors, (formData: FormData) => void, unknown];
+    ) as [FormErrors | undefined, (formData: FormData) => void, unknown];
 
     const [priceInPence, setPriceInPence] = useState<number | undefined>(
         product?.priceInPence
@@ -51,9 +53,8 @@ export function ProductForm({
         number | undefined
     >(product?.availableQuantity);
     const [colours, setColours] = useState<string[]>(
-        product?.colours?.map((c) => c.name) || []
+        product?.colours?.map((c) => c.globalColour.id) || []
     );
-    const [newColour, setNewColour] = useState<string>("");
     const [lengthInMm, setLengthInMm] = useState<number | undefined>(
         product?.lengthInMm
     );
@@ -68,11 +69,35 @@ export function ProductForm({
         product?.images?.map((image) => image.url) || []
     );
 
+    const [availableColours, setAvailableColours] = useState<
+        { value: string; label: string }[]
+    >([]);
+
     useEffect(() => {
         return () => {
             imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
         };
     }, [imagePreviews]);
+
+    useEffect(() => {
+        async function fetchAvailableColours() {
+            const res = await fetch("/api/colours");
+            const data = await res.json();
+            setAvailableColours(
+                data.map((colour: { id: string; name: string }) => ({
+                    value: colour.id,
+                    label: colour.name,
+                }))
+            );
+        }
+        fetchAvailableColours();
+    }, []);
+
+    useEffect(() => {
+        if (product && product.colours) {
+            setColours(product.colours.map((c) => c.globalColour.id));
+        }
+    }, [product]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         setImages((prev) => [...prev, ...acceptedFiles]);
@@ -89,13 +114,6 @@ export function ProductForm({
         },
     });
 
-    const addColour = () => {
-        if (newColour && !colours.includes(newColour)) {
-            setColours([...colours, newColour]);
-            setNewColour("");
-        }
-    };
-
     return (
         <form
             onSubmit={async (e) => {
@@ -104,6 +122,7 @@ export function ProductForm({
                 images.forEach((image) => {
                     formData.append("images", image);
                 });
+                formData.append("colours", JSON.stringify(colours));
                 action(formData);
             }}
             className="space-y-8"
@@ -117,7 +136,7 @@ export function ProductForm({
                     required
                     defaultValue={product?.name || ""}
                 />
-                {error.name && (
+                {error?.name && (
                     <div className="text-destructive">
                         {error.name.join(", ")}
                     </div>
@@ -138,7 +157,7 @@ export function ProductForm({
                 <div className="text-muted-foreground">
                     {formatCurrency((priceInPence || 0) / 100)}
                 </div>
-                {error.priceInPence && (
+                {error?.priceInPence && (
                     <div className="text-destructive">
                         {error.priceInPence.join(", ")}
                     </div>
@@ -152,7 +171,7 @@ export function ProductForm({
                     required
                     defaultValue={product?.description}
                 />
-                {error.description && (
+                {error?.description && (
                     <div className="text-destructive">
                         {error.description.join(", ")}
                     </div>
@@ -170,7 +189,7 @@ export function ProductForm({
                         setLengthInMm(Number(e.target.value) || undefined)
                     }
                 />
-                {error.lengthInMm && (
+                {error?.lengthInMm && (
                     <div className="text-destructive">
                         {error.lengthInMm.join(", ")}
                     </div>
@@ -188,7 +207,7 @@ export function ProductForm({
                         setWidthInMm(Number(e.target.value) || undefined)
                     }
                 />
-                {error.widthInMm && (
+                {error?.widthInMm && (
                     <div className="text-destructive">
                         {error.widthInMm.join(", ")}
                     </div>
@@ -206,7 +225,7 @@ export function ProductForm({
                         setHeightInMm(Number(e.target.value) || undefined)
                     }
                 />
-                {error.heightInMm && (
+                {error?.heightInMm && (
                     <div className="text-destructive">
                         {error.heightInMm.join(", ")}
                     </div>
@@ -225,7 +244,7 @@ export function ProductForm({
                         {product.filePath}
                     </div>
                 )}
-                {error.file && (
+                {error?.file && (
                     <div className="text-destructive">
                         {error.file.join(", ")}
                     </div>
@@ -244,14 +263,14 @@ export function ProductForm({
                         <Image
                             key={index}
                             src={src}
-                            height="100"
-                            width="100"
+                            height={100}
+                            width={100}
                             alt="Product Image Preview"
                             className="border p-1"
                         />
                     ))}
                 </div>
-                {error.images && (
+                {error?.images && (
                     <div className="text-destructive">
                         {error.images.join(", ")}
                     </div>
@@ -259,44 +278,33 @@ export function ProductForm({
             </div>
             <div className="space-y-2">
                 <Label htmlFor="colours">Colours</Label>
-                <div className="flex space-x-2">
-                    <Input
-                        type="text"
-                        id="colours"
-                        name="colours"
-                        value={newColour}
-                        onChange={(e) => setNewColour(e.target.value)}
-                    />
-                    <Button type="button" onClick={addColour}>
-                        Add Colour
-                    </Button>
-                </div>
-                <div className="space-y-2">
-                    {colours.map((colour, index) => (
-                        <div
-                            key={index}
-                            className="flex items-center space-x-2"
+                <div className="flex flex-wrap space-x-2">
+                    {availableColours.map((colour) => (
+                        <Button
+                            key={colour.value}
+                            type="button"
+                            variant={
+                                colours.includes(colour.value)
+                                    ? "default"
+                                    : "outline"
+                            }
+                            onClick={() =>
+                                setColours((prev) =>
+                                    prev.includes(colour.value)
+                                        ? prev.filter((c) => c !== colour.value)
+                                        : [...prev, colour.value]
+                                )
+                            }
                         >
-                            <span>{colour}</span>
-                            <Button
-                                type="button"
-                                onClick={() =>
-                                    setColours(
-                                        colours.filter((c) => c !== colour)
-                                    )
-                                }
-                            >
-                                Remove
-                            </Button>
-                        </div>
+                            {colour.label}
+                        </Button>
                     ))}
                 </div>
-                {/* Hidden input to pass colours */}
-                <input
-                    type="hidden"
-                    name="colours"
-                    value={JSON.stringify(colours)}
-                />
+                {error?.colours && (
+                    <div className="text-destructive">
+                        {error.colours.join(", ")}
+                    </div>
+                )}
             </div>
             <div className="space-y-2">
                 <Label htmlFor="availableQuantity">Available Quantity</Label>
@@ -312,7 +320,7 @@ export function ProductForm({
                         )
                     }
                 />
-                {error.availableQuantity && (
+                {error?.availableQuantity && (
                     <div className="text-destructive">
                         {error.availableQuantity.join(", ")}
                     </div>

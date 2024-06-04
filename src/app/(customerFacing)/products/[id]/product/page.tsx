@@ -11,16 +11,23 @@ export default async function ProductPage({
 }) {
     const product = await db.product.findUnique({
         where: { id },
-        include: { colours: true, images: true },
+        include: {
+            colours: {
+                include: {
+                    globalColour: true,
+                },
+            },
+            images: true,
+        },
     });
 
     if (!product) return notFound();
 
     const serializableProduct = {
         ...product,
-        colours: product.colours.map((colour) => ({
-            id: colour.id,
-            name: colour.name,
+        colours: product.colours.map((productColour) => ({
+            id: productColour.globalColour.id,
+            name: productColour.globalColour.name,
         })),
         images: product.images.map((image) => ({
             url: image.url,

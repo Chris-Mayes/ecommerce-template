@@ -1,3 +1,4 @@
+// admin/products/page.tsx
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "../_components/PageHeader";
 import Link from "next/link";
@@ -29,9 +30,14 @@ export default function AdminProductsPage() {
         <>
             <div className="flex justify-between items-center gap-4">
                 <PageHeader>Products</PageHeader>
-                <Button asChild>
-                    <Link href="/admin/products/new">Add Product</Link>
-                </Button>
+                <div className="flex space-x-2">
+                    <Button asChild>
+                        <Link href="/admin/products/new">Add Product</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/admin/colours">Set Colours</Link>
+                    </Button>
+                </div>
             </div>
             <ProductsTable />
         </>
