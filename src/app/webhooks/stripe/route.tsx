@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
                 const charge = event.data.object as Stripe.Charge;
                 const cartId = charge.metadata.cartId;
                 const email = charge.billing_details.email;
+                const name = charge.billing_details.name;
                 const shippingAddress = charge.shipping?.address;
 
                 console.log(`Charge succeeded: ${JSON.stringify(charge)}`);
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
                     where: { email },
                     create: {
                         email,
+                        name,
                         orders: {
                             create: {
                                 items: {
@@ -90,6 +92,7 @@ export async function POST(req: NextRequest) {
                         },
                     },
                     update: {
+                        name,
                         orders: {
                             create: {
                                 items: {
