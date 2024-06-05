@@ -6,6 +6,8 @@ import {
     Html,
     Preview,
     Tailwind,
+    Text,
+    Section,
 } from "@react-email/components";
 import { OrderInformation } from "./components/OrderInformation";
 
@@ -16,8 +18,9 @@ type PurchaseReceiptEmailProps = {
         description: string;
         quantity: number;
         colour: string;
+        price: number;
     }[];
-    order: { id: string; createdAt: Date; pricePaidInPence: number };
+    order: { id: string; createdAt: Date };
     downloadVerificationId: string;
 };
 
@@ -30,33 +33,52 @@ PurchaseReceiptEmail.PreviewProps = {
                 "/products/5aba7442-e4a5-4d2e-bfa7-5bd358cdad64-02 - What Is Next.js.jpg",
             quantity: 1,
             colour: "Red",
+            price: 1000,
         },
     ],
     order: {
         id: crypto.randomUUID(),
         createdAt: new Date(),
-        pricePaidInPence: 10000,
     },
     downloadVerificationId: crypto.randomUUID(),
 } satisfies PurchaseReceiptEmailProps;
+
+const dateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
 
 export default function PurchaseReceiptEmail({
     products,
     order,
     downloadVerificationId,
 }: PurchaseReceiptEmailProps) {
+    const totalPriceInPence = products.reduce(
+        (sum, product) => sum + (product.price * product.quantity || 0),
+        0
+    );
+
     return (
         <Html>
-            <Preview>Download your products and view receipt</Preview>
+            <Preview>View receipt</Preview>
             <Tailwind>
                 <Head />
                 <Body className="font-sans bg-white">
                     <Container className="max-w-xl">
                         <Heading>Purchase Receipt</Heading>
+                        <Section>
+                            <Text className="mb-0 text-gray-500 whitespace-nowrap text-nowrap mr-4">
+                                Order ID: {order.id}
+                            </Text>
+                            <Text className="mb-0 text-gray-500 whitespace-nowrap text-nowrap mr-4">
+                                Purchased On:{" "}
+                                {dateFormatter.format(order.createdAt)}
+                            </Text>
+                            <Text className="mb-0 text-gray-500 whitespace-nowrap text-nowrap mr-4">
+                                Price Paid: £
+                                {(totalPriceInPence / 100).toFixed(2)}
+                            </Text>
+                        </Section>
                         {products.map((product, index) => (
                             <OrderInformation
                                 key={index}
-                                order={order}
                                 product={product}
                                 quantity={product.quantity}
                                 colour={product.colour}
