@@ -54,8 +54,8 @@ export default function CheckoutPage() {
 
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
-            <Button onClick={() => router.push("/cart")} className="mb-4">
-                Return to Basket
+            <Button onClick={() => router.push("/products")} className="mb-4">
+                Return to Store
             </Button>
             <div className="space-y-4">
                 {cart.map((item, index) => (

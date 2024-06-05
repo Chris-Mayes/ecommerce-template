@@ -4,18 +4,20 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ComponentProps, ReactNode } from "react";
-import BasketCount from "@/components/BasketCount";
+import DropdownCart from "@/components/DropdownCart";
 
 export function Nav({ children }: { children: ReactNode }) {
+    const pathname = usePathname();
+    const isCheckoutPage = pathname === "/checkout";
+
     return (
         <nav className="nav-banner bg-primary text-primary-foreground flex items-center justify-between px-4">
             <div className="flex space-x-4 items-center">{children}</div>
-            <div className="flex items-center ml-auto">
-                <BasketCount />
-            </div>
-            {/* <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <img src="/logo2.png" alt="Logo" className="h-56 w-auto" />
-            </div> */}
+            {!isCheckoutPage && (
+                <div className="flex items-center ml-4 mr-6 mt-6">
+                    <DropdownCart />
+                </div>
+            )}
         </nav>
     );
 }
