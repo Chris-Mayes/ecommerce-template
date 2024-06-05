@@ -12,8 +12,9 @@ import { useFormState, useFormStatus } from "react-dom";
 import Image from "next/image";
 import { Product, Image as ImageType } from "@prisma/client";
 
-type ProductWithColours = Product & {
+type ProductWithColoursAndCategories = Product & {
     colours: { id: string; globalColour: { id: string; name: string } }[];
+    categories: { id: string; globalCategory: { id: string; name: string } }[];
     images: ImageType[];
 };
 
@@ -31,13 +32,14 @@ type FormErrors =
           heightInMm?: string[];
           file?: string[];
           colours?: string[];
+          categories?: string[];
           images?: string[];
       };
 
 export function ProductForm({
     product,
 }: {
-    product?: ProductWithColours | null;
+    product?: ProductWithColoursAndCategories | null;
 }) {
     const [error, action, state] = useFormState(
         product == null
@@ -55,6 +57,9 @@ export function ProductForm({
     const [colours, setColours] = useState<string[]>(
         product?.colours?.map((c) => c.globalColour.id) || []
     );
+    const [categories, setCategories] = useState<string | null>(
+        product?.categories?.[0]?.globalCategory?.id || null
+    );
     const [lengthInMm, setLengthInMm] = useState<number | undefined>(
         product?.lengthInMm
     );
@@ -70,6 +75,9 @@ export function ProductForm({
     );
 
     const [availableColours, setAvailableColours] = useState<
+        { value: string; label: string }[]
+    >([]);
+    const [availableCategories, setAvailableCategories] = useState<
         { value: string; label: string }[]
     >([]);
 
@@ -94,8 +102,25 @@ export function ProductForm({
     }, []);
 
     useEffect(() => {
+        async function fetchAvailableCategories() {
+            const res = await fetch("/api/categories");
+            const data = await res.json();
+            setAvailableCategories(
+                data.map((category: { id: string; name: string }) => ({
+                    value: category.id,
+                    label: category.name,
+                }))
+            );
+        }
+        fetchAvailableCategories();
+    }, []);
+
+    useEffect(() => {
         if (product && product.colours) {
             setColours(product.colours.map((c) => c.globalColour.id));
+        }
+        if (product && product.categories) {
+            setCategories(product.categories[0]?.globalCategory.id || null);
         }
     }, [product]);
 
@@ -123,6 +148,9 @@ export function ProductForm({
                     formData.append("images", image);
                 });
                 formData.append("colours", JSON.stringify(colours));
+                if (categories) {
+                    formData.append("categories", JSON.stringify([categories]));
+                }
                 action(formData);
             }}
             className="space-y-8"
@@ -303,6 +331,30 @@ export function ProductForm({
                 {error?.colours && (
                     <div className="text-destructive">
                         {error.colours.join(", ")}
+                    </div>
+                )}
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="categories">Categories</Label>
+                <div className="flex flex-wrap space-x-2">
+                    {availableCategories.map((category) => (
+                        <Button
+                            key={category.value}
+                            type="button"
+                            variant={
+                                categories === category.value
+                                    ? "default"
+                                    : "outline"
+                            }
+                            onClick={() => setCategories(category.value)}
+                        >
+                            {category.label}
+                        </Button>
+                    ))}
+                </div>
+                {error?.categories && (
+                    <div className="text-destructive">
+                        {error.categories.join(", ")}
                     </div>
                 )}
             </div>

@@ -35,7 +35,10 @@ export default function AdminProductsPage() {
                         <Link href="/admin/products/new">Add Product</Link>
                     </Button>
                     <Button asChild>
-                        <Link href="/admin/colours">Set Colours</Link>
+                        <Link href="/admin/colours">Manage Colours</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/admin/categories">Manage Categories</Link>
                     </Button>
                 </div>
             </div>

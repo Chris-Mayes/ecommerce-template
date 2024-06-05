@@ -58,6 +58,8 @@ OrderHistoryEmail.PreviewProps = {
     ],
 } satisfies OrderHistoryEmailProps;
 
+const dateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
+
 export default function OrderHistoryEmail({ orders }: OrderHistoryEmailProps) {
     return (
         <Html>
@@ -70,13 +72,12 @@ export default function OrderHistoryEmail({ orders }: OrderHistoryEmailProps) {
                         {orders.map((order, index) => (
                             <React.Fragment key={order.id}>
                                 <OrderInformation
-                                    order={order}
                                     product={order.product}
+                                    quantity={order.quantity}
+                                    colour={order.colour}
                                     downloadVerificationId={
                                         order.downloadVerificationId
                                     }
-                                    quantity={order.quantity}
-                                    colour={order.colour}
                                 />
                                 {index < orders.length - 1 && <Hr />}
                             </React.Fragment>

@@ -9,7 +9,11 @@ export default async function EditProductPage({
 }) {
     const product = await db.product.findUnique({
         where: { id },
-        include: { colours: { include: { globalColour: true } }, images: true },
+        include: {
+            colours: { include: { globalColour: true } },
+            images: true,
+            categories: { include: { globalCategory: true } },
+        },
     });
 
     return (

@@ -29,6 +29,14 @@ const addSchema = z.object({
             return false;
         }
     }, "Invalid colours format"),
+    categories: z.string().refine((val) => {
+        try {
+            JSON.parse(val);
+            return true;
+        } catch {
+            return false;
+        }
+    }, "Invalid categories format"),
 });
 
 export async function addProduct(prevState: unknown, formData: FormData) {
@@ -57,6 +65,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 
     const data = result.data;
     const colours = JSON.parse(data.colours);
+    const categories = JSON.parse(data.categories);
 
     await fs.mkdir("products", { recursive: true });
     const filePath = `products/${crypto.randomUUID()}-${data.file.name}`;
@@ -92,6 +101,15 @@ export async function addProduct(prevState: unknown, formData: FormData) {
             data: {
                 productId: product.id,
                 globalColourId: colour,
+            },
+        });
+    }
+
+    for (const category of categories) {
+        await db.productCategory.create({
+            data: {
+                productId: product.id,
+                globalCategoryId: category,
             },
         });
     }
@@ -151,6 +169,7 @@ export async function updateProduct(
 
     const data = result.data;
     const colours = JSON.parse(data.colours);
+    const categories = JSON.parse(data.categories);
     const product = await db.product.findUnique({ where: { id } });
 
     if (product == null) return notFound();
@@ -205,6 +224,16 @@ export async function updateProduct(
             data: {
                 productId: id,
                 globalColourId: colour,
+            },
+        });
+    }
+
+    await db.productCategory.deleteMany({ where: { productId: id } });
+    for (const category of categories) {
+        await db.productCategory.create({
+            data: {
+                productId: id,
+                globalCategoryId: category,
             },
         });
     }
