@@ -18,7 +18,7 @@ type Product = {
     createdAt: Date;
     updatedAt: Date;
     images: { url: string }[];
-    categories: { globalCategory: { name: string } }[];
+    categories: { globalCategory: { name: string; order: number } }[];
 };
 
 export default function ProductsPage() {
@@ -49,7 +49,7 @@ function ProductsWithCategoryTree() {
         const fetchData = async () => {
             const response = await fetch("/api/get-products-by-category");
             const data = await response.json();
-            console.log("Fetched Data:", data); // Add this line
+            console.log("Fetched Data:", data);
             setProductsByCategory(data);
         };
 
@@ -69,21 +69,28 @@ function ProductsWithCategoryTree() {
         }
     };
 
+    // Sort categories by their order
+    const sortedCategories = Object.keys(productsByCategory).sort((a, b) => {
+        const aOrder =
+            productsByCategory[a][0]?.categories[0]?.globalCategory.order || 0;
+        const bOrder =
+            productsByCategory[b][0]?.categories[0]?.globalCategory.order || 0;
+        return aOrder - bOrder;
+    });
+
     return (
         <div className="flex">
             <CategoryTree
-                categories={Object.keys(productsByCategory)}
+                categories={sortedCategories}
                 onCategoryClick={scrollToCategory}
             />
             <div className="flex-grow space-y-8 ml-12">
-                {Object.entries(productsByCategory).map(
-                    ([category, products]) => (
-                        <div key={category} id={category}>
-                            <h2 className="text-2xl font-bold mb-4">
-                                {category}
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {products.map((product: Product) => (
+                {sortedCategories.map((category) => (
+                    <div key={category} id={category}>
+                        <h2 className="text-2xl font-bold mb-4">{category}</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {productsByCategory[category].map(
+                                (product: Product) => (
                                     <ProductCard
                                         key={product.id}
                                         id={product.id}
@@ -92,11 +99,11 @@ function ProductsWithCategoryTree() {
                                         description={product.description}
                                         images={product.images}
                                     />
-                                ))}
-                            </div>
+                                )
+                            )}
                         </div>
-                    )
-                )}
+                    </div>
+                ))}
             </div>
         </div>
     );

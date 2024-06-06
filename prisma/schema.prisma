@@ -30,6 +30,7 @@ model Product {
 model GlobalCategory {
   id        String         @id @default(uuid())
   name      String         @unique
+  order     Int            @default(0)
   products  ProductCategory[]
 }
 
