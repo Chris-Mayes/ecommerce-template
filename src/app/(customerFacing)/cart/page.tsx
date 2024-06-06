@@ -170,7 +170,7 @@ export default function CartPage() {
                                                     item.colour
                                                 )
                                             }
-                                            className="bg-red-600 text-white"
+                                            className="bg-primary-red text-white"
                                         >
                                             Yes
                                         </Button>

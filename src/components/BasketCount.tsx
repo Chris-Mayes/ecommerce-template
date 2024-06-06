@@ -25,7 +25,7 @@ export default function BasketCount() {
                 Basket
             </Link>
             {itemCount > 0 && (
-                <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2">
+                <div className="bg-primary-red text-white rounded-full w-6 h-6 flex items-center justify-center mr-2">
                     {itemCount}
                 </div>
             )}

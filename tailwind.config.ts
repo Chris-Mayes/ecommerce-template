@@ -36,6 +36,7 @@ const config = {
                     foreground: "hsl(var(--primary-foreground))",
                     hover: "hsl(var(--primary-hover))",
                     buttons: "hsl(var(--primary-buttons))",
+                    red: "hsl(var(--primary-red))",
                 },
                 secondary: {
                     DEFAULT: "hsl(var(--secondary))",

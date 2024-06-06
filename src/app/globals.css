@@ -5,7 +5,7 @@
 /* HSL (Hue, Saturation, Lightness) */
 @layer base {
     :root {
-        --background: 0 0% 85%;
+        --background: 0 0% 100%;
         --foreground: 222.2 1% 4.9%;
 
         --card: 0 0% 100%;
@@ -15,11 +15,13 @@
         --popover-foreground: 222.2 84% 4.9%;
 
         /* banner/buttons */
-        --primary: 0 0% 85%;
+        --primary: 233 78% 88%;
         --primary-foreground: 210 40% 98%;
 
-        --primary-hover: 206, 100%, 37%;
-        --primary-buttons: 208, 98%, 36%;
+        --primary-hover: 233 78% 78%;
+        --primary-buttons: 233 78% 68%;
+
+        --primary-red: 12 90% 60%;
 
         --secondary: 210 40% 96.1%;
         --secondary-foreground: 222.2 47.4% 11.2%;
