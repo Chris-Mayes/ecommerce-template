@@ -2,7 +2,9 @@ import db from "@/db/db";
 import { notFound } from "next/navigation";
 import ProductImageCarousel from "@/components/ui/productPageCarousel";
 import ProductPurchaseForm from "../../../../../components/ProductPurchasePage";
-import { formatCurrency } from "@/lib/formatters";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
 
 export default async function ProductPage({
     params: { id },
@@ -35,7 +37,16 @@ export default async function ProductPage({
     };
 
     return (
-        <div className="p-0 max-w-5xl pt-20 mx-auto">
+        <div className="max-w-5xl mx-auto">
+            <div className="flex items-center mb-12">
+                <Link href="/products" className="flex items-center text-black">
+                    <FontAwesomeIcon
+                        icon={faArrowLeft}
+                        className="mr-2 w-6 h-6"
+                    />
+                    <span className="align-middle">Back to Products</span>
+                </Link>
+            </div>
             <div className="flex flex-col lg:flex-row w-full">
                 <div className="relative w-full lg:w-1/2 mb-4 lg:mb-0">
                     <ProductImageCarousel

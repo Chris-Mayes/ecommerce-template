@@ -75,6 +75,7 @@
 html {
     overflow-y: scroll; /* Always show vertical scrollbar */
     scrollbar-width: none; /* Hide scrollbar */
+    scroll-behavior: smooth;
 }
 
 @layer base {

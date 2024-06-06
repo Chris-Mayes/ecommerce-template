@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { useCart } from "@/context/CartContext";
@@ -32,6 +32,7 @@ export default function ProductPurchaseForm({
     const [colour, setColour] = useState(colours[0]?.name || "");
     const { addToCart, cart } = useCart();
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
+    const alertTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleQuantityChange = (value: number) => {
         if (value > 0 && value <= availableQuantity) {
@@ -48,13 +49,22 @@ export default function ProductPurchaseForm({
     const isAvailable = availableQuantity > 0;
 
     const showAlert = (message: string) => {
+        if (alertTimeoutRef.current) {
+            clearTimeout(alertTimeoutRef.current);
+        }
+
         setAlertMessage(message);
-        setTimeout(() => {
+
+        alertTimeoutRef.current = setTimeout(() => {
             setAlertMessage(null);
-        }, 4000); // Hide alert
+        }, 4000); // Hide alert after 4 seconds
     };
 
     const handleAddToCart = () => {
+        if (alertMessage) {
+            return;
+        }
+
         const itemInCart = cart.find(
             (item) => item.productId === productId && item.colour === colour
         );
@@ -65,7 +75,7 @@ export default function ProductPurchaseForm({
 
         if (totalQuantityInCart + quantity > availableQuantity) {
             showAlert(
-                `Failed to add to basket. We only have ${availableQuantity} of these available!`
+                `You have ${totalQuantityInCart} in your basket. Adding ${quantity} more exceeds our available quantity!`
             );
         } else if (itemInCart) {
             showAlert("This colour is already in your basket!");
@@ -152,7 +162,7 @@ export default function ProductPurchaseForm({
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div className="mt-4 p-4 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+                <div className="mt-4 w-2/3 p-4 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
                     {alertMessage}
                 </div>
             </Transition>
