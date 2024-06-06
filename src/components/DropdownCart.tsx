@@ -17,7 +17,11 @@ export default function DropdownCart() {
     const [availableQuantities, setAvailableQuantities] = useState<{
         [productId: string]: number;
     }>({});
-    const [alertMessage, setAlertMessage] = useState<string | null>(null);
+    const [alertMessage, setAlertMessage] = useState<{
+        message: string;
+        itemKey: string;
+    } | null>(null);
+    const alertTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const router = useRouter();
     const dropdownRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -85,9 +89,14 @@ export default function DropdownCart() {
         }, 0);
     };
 
-    const showAlert = (message: string) => {
-        setAlertMessage(message);
-        setTimeout(() => {
+    const showAlert = (message: string, itemKey: string) => {
+        if (alertTimeoutRef.current) {
+            clearTimeout(alertTimeoutRef.current);
+        }
+
+        setAlertMessage({ message, itemKey });
+
+        alertTimeoutRef.current = setTimeout(() => {
             setAlertMessage(null);
         }, 3000); // Hide alert after 3 seconds
     };
@@ -99,6 +108,7 @@ export default function DropdownCart() {
         productName: string
     ) => {
         const availableQuantity = availableQuantities[productId] || 0;
+        const itemKey = `${productId}-${colour}`;
         const cartItem = cart.find(
             (item) => item.productId === productId && item.colour === colour
         );
@@ -112,17 +122,18 @@ export default function DropdownCart() {
             updateCartItemQuantity(productId, colour, quantity);
         } else if (quantity > 0) {
             showAlert(
-                `Cannot add more than ${availableQuantity} ${productName}s.`
+                `Cannot add more than ${availableQuantity} ${productName}s.`,
+                itemKey
             );
         } else if (quantity < 1) {
-            showAlert("Quantity cannot be less than 1.");
+            showAlert("Quantity cannot be less than 1.", itemKey);
         }
     };
 
     if (!isClient) return null;
 
     return (
-        <div className="fixed top-12 right-14 z-50">
+        <div className="fixed top-12 right-12 z-50 dropdown-container">
             <div className="relative flex items-center">
                 <button
                     ref={buttonRef}
@@ -131,7 +142,7 @@ export default function DropdownCart() {
                 >
                     <FontAwesomeIcon
                         icon={faShoppingBag}
-                        className="mr-4 mt-2 mb-1 custom-icon-size"
+                        className="mr-4 mt-2 custom-icon-size"
                     />
                     {getTotalItemCount() > 0 && (
                         <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white text-sm rounded-full flex items-center justify-center">
@@ -150,7 +161,7 @@ export default function DropdownCart() {
                 >
                     <div
                         ref={dropdownRef}
-                        className="absolute right-0 top-full mt-2 w-96 bg-white border border-gray-200 shadow-lg z-50"
+                        className="absolute right-0 ml-2 top-full mt-4 w-96 bg-white border border-gray-200 shadow-lg z-50 dropdown-cart"
                     >
                         <div className="p-4">
                             {cart.length === 0 ? (
@@ -160,92 +171,104 @@ export default function DropdownCart() {
                             ) : (
                                 <>
                                     <div className="max-h-96 overflow-y-auto">
-                                        {cart.map((item, index) => (
-                                            <div
-                                                key={index}
-                                                className="flex items-center py-2"
-                                            >
-                                                <div className="relative w-28 h-28">
-                                                    <Image
-                                                        src={item.imagePath}
-                                                        alt={item.name}
-                                                        fill
-                                                        style={{
-                                                            objectFit:
-                                                                "contain",
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div className="ml-4 flex-1">
-                                                    <h2 className="text-lg font-bold text-black">
-                                                        {item.name}
-                                                    </h2>
-                                                    <p className="text-sm text-gray-500">
-                                                        Colour: {item.colour}
-                                                    </p>
-                                                    <p className="text-sm text-gray-500">
-                                                        Price: £
-                                                        {(
-                                                            item.productPrice /
-                                                            100
-                                                        ).toFixed(2)}
-                                                    </p>
-                                                    <div className="flex items-center mt-2">
-                                                        <Button
-                                                            onClick={() =>
-                                                                handleQuantityChange(
-                                                                    item.productId,
-                                                                    item.colour,
-                                                                    item.quantity -
-                                                                        1,
-                                                                    item.name
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                item.quantity <=
-                                                                1
-                                                            }
-                                                            className="text-sm px-2 py-0.5 w-8"
-                                                        >
-                                                            -
-                                                        </Button>
-                                                        <span className="mx-2 text-black w-8 text-center">
-                                                            {item.quantity}
-                                                        </span>
-                                                        <Button
-                                                            onClick={() =>
-                                                                handleQuantityChange(
-                                                                    item.productId,
-                                                                    item.colour,
-                                                                    item.quantity +
-                                                                        1,
-                                                                    item.name
-                                                                )
-                                                            }
-                                                            className="text-sm px-2 py-0.5 w-8"
-                                                        >
-                                                            +
-                                                        </Button>
-                                                        <button
-                                                            onClick={() =>
-                                                                removeFromCart(
-                                                                    item.productId,
-                                                                    item.colour
-                                                                )
-                                                            }
-                                                            className="ml-2 text-red-600 text-sm"
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={
-                                                                    faTimesCircle
+                                        {cart.map((item, index) => {
+                                            const itemKey = `${item.productId}-${item.colour}`;
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className="relative flex items-center py-2"
+                                                >
+                                                    <div className="relative w-28 h-28">
+                                                        <Image
+                                                            src={item.imagePath}
+                                                            alt={item.name}
+                                                            fill
+                                                            style={{
+                                                                objectFit:
+                                                                    "contain",
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="ml-4 flex-1">
+                                                        <h2 className="text-lg font-bold text-black">
+                                                            {item.name}
+                                                        </h2>
+                                                        <p className="text-sm text-gray-500">
+                                                            Colour:{" "}
+                                                            {item.colour}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Price: £
+                                                            {(
+                                                                item.productPrice /
+                                                                100
+                                                            ).toFixed(2)}
+                                                        </p>
+                                                        <div className="flex items-center mt-2 relative">
+                                                            {alertMessage?.itemKey ===
+                                                                itemKey && (
+                                                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 p-2 bg-red-500 text-white text-xs rounded-md shadow-lg">
+                                                                    {
+                                                                        alertMessage.message
+                                                                    }
+                                                                </div>
+                                                            )}
+                                                            <Button
+                                                                onClick={() =>
+                                                                    handleQuantityChange(
+                                                                        item.productId,
+                                                                        item.colour,
+                                                                        item.quantity -
+                                                                            1,
+                                                                        item.name
+                                                                    )
                                                                 }
-                                                                size="lg"
-                                                            />
-                                                        </button>
+                                                                disabled={
+                                                                    item.quantity <=
+                                                                    1
+                                                                }
+                                                                className="text-sm px-2 py-0.5 w-8"
+                                                            >
+                                                                -
+                                                            </Button>
+                                                            <span className="mx-2 text-black w-8 text-center">
+                                                                {item.quantity}
+                                                            </span>
+                                                            <Button
+                                                                onClick={() =>
+                                                                    handleQuantityChange(
+                                                                        item.productId,
+                                                                        item.colour,
+                                                                        item.quantity +
+                                                                            1,
+                                                                        item.name
+                                                                    )
+                                                                }
+                                                                className="text-sm px-2 py-0.5 w-8"
+                                                            >
+                                                                +
+                                                            </Button>
+                                                            <button
+                                                                onClick={() =>
+                                                                    removeFromCart(
+                                                                        item.productId,
+                                                                        item.colour
+                                                                    )
+                                                                }
+                                                                className="ml-2 text-red-600 text-sm"
+                                                            >
+                                                                <FontAwesomeIcon
+                                                                    icon={
+                                                                        faTimesCircle
+                                                                    }
+                                                                    size="lg"
+                                                                />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                     <div className="border-t border-gray-200 pt-4 mt-4">
                                         <div className="flex justify-between text-lg font-bold text-black">
@@ -266,19 +289,6 @@ export default function DropdownCart() {
                                         >
                                             Proceed to checkout
                                         </Button>
-                                        <Transition
-                                            show={!!alertMessage}
-                                            enter="transition-opacity duration-300"
-                                            enterFrom="opacity-0"
-                                            enterTo="opacity-100"
-                                            leave="transition-opacity duration-300"
-                                            leaveFrom="opacity-100"
-                                            leaveTo="opacity-0"
-                                        >
-                                            <div className="p-4 border border-gray-300 rounded-md bg-gray-100 text-gray-700 mt-4">
-                                                {alertMessage}
-                                            </div>
-                                        </Transition>
                                     </div>
                                 </>
                             )}
