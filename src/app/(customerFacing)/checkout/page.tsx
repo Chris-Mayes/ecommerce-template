@@ -66,7 +66,7 @@ export default function CheckoutPage() {
                         key={index}
                         className="flex gap-5 pt-1 pb-1 items-center"
                     >
-                        <div className="relative w-1/4 h-56">
+                        <div className="relative w-1/4 h-48 w-48">
                             <Image
                                 src={item.imagePath}
                                 alt={item.name}

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useMemo } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
 
 interface Product {
     productId: string;
@@ -33,6 +34,12 @@ export default function SuccessPageClient({
         }
     }, [isSuccess]);
 
+    const totalPrice = useMemo(() => {
+        return products.reduce((total, item) => {
+            return total + item.price * item.quantity;
+        }, 0);
+    }, [products]);
+
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
             <h1 className="text-4xl font-bold">
@@ -40,7 +47,7 @@ export default function SuccessPageClient({
             </h1>
             {products.map((item) => (
                 <div key={item.productId} className="flex gap-4 items-center">
-                    <div className="relative w-1/4 h-64">
+                    <div className="relative w-1/4 h-48 w-48">
                         <Image
                             src={item.imagePath}
                             fill
@@ -64,11 +71,21 @@ export default function SuccessPageClient({
                     </div>
                 </div>
             ))}
-            <div>
+            <div className="text-lg font-bold">
+                {`Total: £${(totalPrice / 100).toFixed(2)}`}
+            </div>
+            <div className="">
                 {isSuccess && (
-                    <Button className="mt-4" size="lg" asChild>
-                        <Link href={`/products`}>Continue Shopping</Link>
-                    </Button>
+                    <Link
+                        href="/products"
+                        className="flex items-center text-black"
+                    >
+                        <span className="align-middle">Continue Shopping</span>
+                        <FontAwesomeIcon
+                            icon={faArrowRight}
+                            className="ml-2 w-6 h-6"
+                        />
+                    </Link>
                 )}
             </div>
         </div>
