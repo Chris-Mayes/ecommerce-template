@@ -17,9 +17,9 @@ const addSchema = z.object({
     description: z.string().min(1),
     priceInPence: z.coerce.number().int().min(1),
     availableQuantity: z.coerce.number().int().min(0),
-    lengthInMm: z.coerce.number().int().min(1),
-    widthInMm: z.coerce.number().int().min(1),
-    heightInMm: z.coerce.number().int().min(1),
+    lengthInMm: z.coerce.number().int().optional().nullable(),
+    widthInMm: z.coerce.number().int().optional().nullable(),
+    heightInMm: z.coerce.number().int().optional().nullable(),
     file: fileSchema.refine((file) => file.size > 0, "Required"),
     colours: z.string().refine((val) => {
         try {
@@ -89,9 +89,9 @@ export async function addProduct(prevState: unknown, formData: FormData) {
             description: data.description,
             priceInPence: data.priceInPence,
             availableQuantity: data.availableQuantity,
-            lengthInMm: data.lengthInMm,
-            widthInMm: data.widthInMm,
-            heightInMm: data.heightInMm,
+            lengthInMm: data.lengthInMm ?? null,
+            widthInMm: data.widthInMm ?? null,
+            heightInMm: data.heightInMm ?? null,
             filePath,
         },
     });
@@ -212,9 +212,9 @@ export async function updateProduct(
             priceInPence: data.priceInPence,
             availableQuantity: data.availableQuantity,
             filePath,
-            lengthInMm: data.lengthInMm,
-            widthInMm: data.widthInMm,
-            heightInMm: data.heightInMm,
+            lengthInMm: data.lengthInMm ?? null,
+            widthInMm: data.widthInMm ?? null,
+            heightInMm: data.heightInMm ?? null,
         },
     });
 

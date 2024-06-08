@@ -12,9 +12,9 @@ model Product {
   name                   String
   priceInPence           Int
   description            String
-  lengthInMm             Int
-  widthInMm              Int
-  heightInMm             Int
+  lengthInMm             Int?
+  widthInMm              Int?
+  heightInMm             Int?
   isAvailableForPurchase Boolean        @default(true)
   availableQuantity      Int
   filePath               String 

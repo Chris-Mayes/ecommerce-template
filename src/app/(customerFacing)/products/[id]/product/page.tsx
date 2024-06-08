@@ -36,6 +36,11 @@ export default async function ProductPage({
         })),
     };
 
+    const hasDimensions =
+        (product.lengthInMm ?? 0) > 0 ||
+        (product.widthInMm ?? 0) > 0 ||
+        (product.heightInMm ?? 0) > 0;
+
     return (
         <div className="max-w-5xl mx-auto">
             <div className="flex items-center mb-12">
@@ -66,23 +71,37 @@ export default async function ProductPage({
                     </p>
                     <div className="flex-grow flex flex-col justify-top">
                         <p className="mb-2 pb-3">{product.description}</p>
-                        <div className="mt-4">
-                            <p className="font-semibold">
-                                Approximate Dimensions (mm):
-                            </p>
-                            <div className="flex items-center space-x-2">
-                                <span className="font-medium">Length:</span>
-                                <span>{product.lengthInMm}</span>
+                        {hasDimensions && (
+                            <div className="mt-4">
+                                <p className="font-semibold">
+                                    Approximate Dimensions (mm):
+                                </p>
+                                {(product.lengthInMm ?? 0) > 0 && (
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium">
+                                            Length:
+                                        </span>
+                                        <span>{product.lengthInMm}</span>
+                                    </div>
+                                )}
+                                {(product.widthInMm ?? 0) > 0 && (
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium">
+                                            Width:
+                                        </span>
+                                        <span>{product.widthInMm}</span>
+                                    </div>
+                                )}
+                                {(product.heightInMm ?? 0) > 0 && (
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium">
+                                            Height:
+                                        </span>
+                                        <span>{product.heightInMm}</span>
+                                    </div>
+                                )}
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <span className="font-medium">Width:</span>
-                                <span>{product.widthInMm}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <span className="font-medium">Height:</span>
-                                <span>{product.heightInMm}</span>
-                            </div>
-                        </div>
+                        )}
                     </div>
 
                     <div className="mt-auto pt-9">

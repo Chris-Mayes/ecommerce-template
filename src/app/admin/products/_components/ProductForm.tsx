@@ -61,13 +61,13 @@ export function ProductForm({
         product?.categories?.[0]?.globalCategory?.id || null
     );
     const [lengthInMm, setLengthInMm] = useState<number | undefined>(
-        product?.lengthInMm
+        product?.lengthInMm ?? undefined
     );
     const [widthInMm, setWidthInMm] = useState<number | undefined>(
-        product?.widthInMm
+        product?.widthInMm ?? undefined
     );
     const [heightInMm, setHeightInMm] = useState<number | undefined>(
-        product?.heightInMm
+        product?.heightInMm ?? undefined
     );
     const [images, setImages] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>(
@@ -156,7 +156,7 @@ export function ProductForm({
             className="space-y-8"
         >
             <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Name - Required</Label>
                 <Input
                     type="text"
                     id="name"
@@ -171,7 +171,7 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="priceInPence">Price In Pence</Label>
+                <Label htmlFor="priceInPence">Price In Pence - Required</Label>
                 <Input
                     type="number"
                     id="priceInPence"
@@ -192,7 +192,7 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description - Required</Label>
                 <Textarea
                     id="description"
                     name="description"
@@ -206,15 +206,25 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="lengthInMm">Length (mm)</Label>
+                <p>
+                    <i>
+                        Note: Leave all dimension fields blank or 0 to exclude
+                        from product page
+                    </i>
+                </p>
+
+                <Label htmlFor="lengthInMm">Length (mm) - Not required</Label>
                 <Input
                     type="number"
                     id="lengthInMm"
                     name="lengthInMm"
-                    required
-                    value={lengthInMm}
+                    value={lengthInMm !== undefined ? lengthInMm : ""}
                     onChange={(e) =>
-                        setLengthInMm(Number(e.target.value) || undefined)
+                        setLengthInMm(
+                            e.target.value === ""
+                                ? undefined
+                                : Number(e.target.value)
+                        )
                     }
                 />
                 {error?.lengthInMm && (
@@ -224,15 +234,18 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="widthInMm">Width (mm)</Label>
+                <Label htmlFor="widthInMm">Width (mm) - Not required</Label>
                 <Input
                     type="number"
                     id="widthInMm"
                     name="widthInMm"
-                    required
-                    value={widthInMm}
+                    value={widthInMm !== undefined ? widthInMm : ""}
                     onChange={(e) =>
-                        setWidthInMm(Number(e.target.value) || undefined)
+                        setWidthInMm(
+                            e.target.value === ""
+                                ? undefined
+                                : Number(e.target.value)
+                        )
                     }
                 />
                 {error?.widthInMm && (
@@ -242,15 +255,18 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="heightInMm">Height (mm)</Label>
+                <Label htmlFor="heightInMm">Height (mm) - Not required</Label>
                 <Input
                     type="number"
                     id="heightInMm"
                     name="heightInMm"
-                    required
-                    value={heightInMm}
+                    value={heightInMm !== undefined ? heightInMm : ""}
                     onChange={(e) =>
-                        setHeightInMm(Number(e.target.value) || undefined)
+                        setHeightInMm(
+                            e.target.value === ""
+                                ? undefined
+                                : Number(e.target.value)
+                        )
                     }
                 />
                 {error?.heightInMm && (
@@ -260,7 +276,7 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="file">File</Label>
+                <Label htmlFor="file">File - Required</Label>
                 <Input
                     type="file"
                     id="file"
@@ -279,7 +295,7 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="images">Images</Label>
+                <Label htmlFor="images">Images - Required</Label>
                 <div {...getRootProps({ className: "dropzone" })}>
                     <input {...getInputProps()} />
                     <p>
@@ -305,7 +321,7 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="colours">Colours</Label>
+                <Label htmlFor="colours">Colours - Required (at least 1)</Label>
                 <div className="flex flex-wrap space-x-2">
                     {availableColours.map((colour) => (
                         <Button
@@ -335,7 +351,7 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="categories">Categories</Label>
+                <Label htmlFor="categories">Categories - Required</Label>
                 <div className="flex flex-wrap space-x-2">
                     {availableCategories.map((category) => (
                         <Button
@@ -359,7 +375,9 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="availableQuantity">Available Quantity</Label>
+                <Label htmlFor="availableQuantity">
+                    Available Quantity - Required
+                </Label>
                 <Input
                     type="number"
                     id="availableQuantity"
