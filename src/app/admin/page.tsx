@@ -1,5 +1,3 @@
-// src\app\admin\page.tsx
-
 import {
     Card,
     CardContent,

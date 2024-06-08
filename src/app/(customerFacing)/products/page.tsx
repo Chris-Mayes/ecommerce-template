@@ -3,7 +3,6 @@
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { Suspense, useEffect, useState, useRef } from "react";
 
-// Define types
 type Product = {
     id: string;
     name: string;
@@ -69,7 +68,6 @@ function ProductsWithCategoryTree() {
         }
     };
 
-    // Sort categories by their order
     const sortedCategories = Object.keys(productsByCategory).sort((a, b) => {
         const aOrder =
             productsByCategory[a][0]?.categories[0]?.globalCategory.order || 0;

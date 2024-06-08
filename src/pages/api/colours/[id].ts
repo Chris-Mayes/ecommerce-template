@@ -9,7 +9,6 @@ export default async function handler(
 
     if (req.method === "DELETE") {
         try {
-            // Find the colour being deleted
             const colour = await db.globalColour.findUnique({
                 where: { id: id as string },
             });
@@ -19,7 +18,6 @@ export default async function handler(
                 return res.status(404).json({ error: "Colour not found" });
             }
 
-            // Delete the colour (this will cascade delete the references)
             await db.globalColour.delete({
                 where: { id: id as string },
             });

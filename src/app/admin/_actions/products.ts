@@ -42,18 +42,15 @@ const addSchema = z.object({
 export async function addProduct(prevState: unknown, formData: FormData) {
     const entries = Object.fromEntries(formData.entries());
 
-    // Process images separately
     const images = formData
         .getAll("images")
         .filter((file) => file instanceof File) as File[];
 
-    // Validate non-image fields
     const result = addSchema.safeParse(entries);
     if (result.success === false) {
         return result.error.formErrors.fieldErrors;
     }
 
-    // Validate images
     for (const image of images) {
         const imageResult = imageSchema.safeParse(image);
         if (!imageResult.success) {
@@ -126,7 +123,6 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     revalidatePath("/");
     revalidatePath("/products");
 
-    // Use JavaScript redirection for client-side navigation
     if (typeof window !== "undefined") {
         window.location.href = "/admin/products";
     } else {
@@ -146,18 +142,15 @@ export async function updateProduct(
 ) {
     const entries = Object.fromEntries(formData.entries());
 
-    // Process images separately
     const images = formData
         .getAll("images")
         .filter((file) => file instanceof File) as File[];
 
-    // Validate non-image fields
     const result = editSchema.safeParse(entries);
     if (result.success === false) {
         return result.error.formErrors.fieldErrors;
     }
 
-    // Validate images
     for (const image of images) {
         const imageResult = imageSchema.safeParse(image);
         if (!imageResult.success) {
@@ -250,7 +243,6 @@ export async function updateProduct(
     revalidatePath("/");
     revalidatePath("/products");
 
-    // Use JavaScript redirection for client-side navigation
     if (typeof window !== "undefined") {
         window.location.href = "/admin/products";
     } else {

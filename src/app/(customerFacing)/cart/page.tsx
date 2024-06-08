@@ -151,7 +151,7 @@ export default function CartPage() {
                             <Button
                                 onClick={() =>
                                     setShowConfirm(item.productId + item.colour)
-                                } // Unique key for each item
+                                }
                                 className="mt-2"
                             >
                                 Remove
