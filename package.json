@@ -8,8 +8,7 @@
         "start": "next start -p $PORT",
         "lint": "next lint",
         "email": "cp .env ./node_modules/react-email && email dev --dir src/email --port 3001",
-        "heroku-postbuild": "next build",
-        "migrate:deploy": "prisma migrate deploy"
+        "heroku-postbuild": "prisma generate && prisma migrate deploy && next build"
     },
     "dependencies": {
         "@dnd-kit/core": "^6.1.0",
