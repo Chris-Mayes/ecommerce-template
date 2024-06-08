@@ -4,9 +4,9 @@ CREATE TABLE "Product" (
     "name" TEXT NOT NULL,
     "priceInPence" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
-    "lengthInMm" INTEGER NOT NULL,
-    "widthInMm" INTEGER NOT NULL,
-    "heightInMm" INTEGER NOT NULL,
+    "lengthInMm" INTEGER,
+    "widthInMm" INTEGER,
+    "heightInMm" INTEGER,
     "isAvailableForPurchase" BOOLEAN NOT NULL DEFAULT true,
     "availableQuantity" INTEGER NOT NULL,
     "filePath" TEXT NOT NULL,
@@ -55,6 +55,7 @@ CREATE TABLE "Order" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" TEXT NOT NULL DEFAULT 'Pending',
+    "customerName" TEXT NOT NULL,
     CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 

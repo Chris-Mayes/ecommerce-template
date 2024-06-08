@@ -36,12 +36,12 @@ interface ShippingAddress {
 
 interface User {
     email: string;
-    name: string;
 }
 
 interface Order {
     id: string;
     user: User;
+    customerName: string;
     items: OrderItem[];
     shippingAddress: ShippingAddress;
     status: string;
@@ -137,8 +137,7 @@ function OrdersTable() {
                                     )}
                                     {itemIndex === 0 && (
                                         <TableCell rowSpan={order.items.length}>
-                                            {order.user.name}
-                                            <br />
+                                            {order.customerName} <br />
                                             {order.user.email}
                                         </TableCell>
                                     )}

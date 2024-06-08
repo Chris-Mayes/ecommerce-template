@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
                 const charge = event.data.object as Stripe.Charge;
                 const cartId = charge.metadata.cartId;
                 const email = charge.billing_details.email;
-                const name = charge.billing_details.name;
+                const name = charge.billing_details.name ?? "Customer";
                 const shippingAddress = charge.shipping?.address;
 
                 console.log(`Charge succeeded: ${JSON.stringify(charge)}`);
@@ -61,77 +61,40 @@ export async function POST(req: NextRequest) {
 
                 const user = await db.user.upsert({
                     where: { email },
-                    create: {
-                        email,
-                        name,
-                        orders: {
-                            create: {
-                                items: {
-                                    create: cart.items.map((item) => ({
-                                        productId: item.productId,
-                                        priceInPence: item.price,
-                                        quantity: item.quantity,
-                                        colour: item.colour,
-                                    })),
-                                },
-                                shippingAddress: shippingAddress
-                                    ? {
-                                          create: {
-                                              line1:
-                                                  shippingAddress.line1 || "",
-                                              city: shippingAddress.city || "",
-                                              postalCode:
-                                                  shippingAddress.postal_code ||
-                                                  "",
-                                              country:
-                                                  shippingAddress.country || "",
-                                          },
-                                      }
-                                    : undefined,
-                            },
-                        },
-                    },
-                    update: {
-                        name,
-                        orders: {
-                            create: {
-                                items: {
-                                    create: cart.items.map((item) => ({
-                                        productId: item.productId,
-                                        priceInPence: item.price,
-                                        quantity: item.quantity,
-                                        colour: item.colour,
-                                    })),
-                                },
-                                shippingAddress: shippingAddress
-                                    ? {
-                                          create: {
-                                              line1:
-                                                  shippingAddress.line1 || "",
-                                              city: shippingAddress.city || "",
-                                              postalCode:
-                                                  shippingAddress.postal_code ||
-                                                  "",
-                                              country:
-                                                  shippingAddress.country || "",
-                                          },
-                                      }
-                                    : undefined,
-                            },
-                        },
-                    },
-                    include: {
-                        orders: {
-                            orderBy: { createdAt: "desc" },
-                            take: 1,
-                            include: { items: true, shippingAddress: true },
-                        },
-                    },
+                    create: { email, name },
+                    update: { name },
                 });
 
-                const order = user.orders[0];
+                const order = await db.order.create({
+                    data: {
+                        userId: user.id,
+                        customerName: name,
+                        items: {
+                            create: cart.items.map((item) => ({
+                                productId: item.productId,
+                                priceInPence: item.price,
+                                quantity: item.quantity,
+                                colour: item.colour,
+                            })),
+                        },
+                        shippingAddress: shippingAddress
+                            ? {
+                                  create: {
+                                      line1: shippingAddress.line1 || "",
+                                      city: shippingAddress.city || "",
+                                      postalCode:
+                                          shippingAddress.postal_code || "",
+                                      country: shippingAddress.country || "",
+                                  },
+                              }
+                            : undefined,
+                    },
+                    include: { items: true, shippingAddress: true },
+                });
+
                 const totalPriceInPence = order.items.reduce(
-                    (sum, item) => sum + item.priceInPence,
+                    (sum: number, item: { priceInPence: number }) =>
+                        sum + item.priceInPence,
                     0
                 );
 

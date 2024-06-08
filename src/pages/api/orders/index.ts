@@ -13,9 +13,9 @@ export default async function handler(
                     user: {
                         select: {
                             email: true,
-                            name: true,
                         },
                     },
+                    customerName: true,
                     items: {
                         select: {
                             id: true,
