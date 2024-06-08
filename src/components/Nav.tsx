@@ -8,7 +8,7 @@ import DropdownCart from "@/components/DropdownCart";
 
 export function Nav({ children }: { children: ReactNode }) {
     return (
-        <nav className="nav-banner bg-primary text-primary-foreground flex items-center justify-between px-4">
+        <nav className="nav-banner bg-primary text-primary-foreground flex items-center justify-between px-4 mb-24">
             <div className="flex space-x-4 items-center">{children}</div>
             <div className="flex items-center ml-auto">
                 <NavLink href="/trackOrder">My Orders</NavLink>

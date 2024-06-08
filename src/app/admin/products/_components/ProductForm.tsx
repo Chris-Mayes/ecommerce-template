@@ -11,6 +11,7 @@ import { addProduct, updateProduct } from "../../_actions/products";
 import { useFormState, useFormStatus } from "react-dom";
 import Image from "next/image";
 import { Product, Image as ImageType } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 type ProductWithColoursAndCategories = Product & {
     colours: { id: string; globalColour: { id: string; name: string } }[];
@@ -41,6 +42,7 @@ export function ProductForm({
 }: {
     product?: ProductWithColoursAndCategories | null;
 }) {
+    const router = useRouter();
     const [error, action, state] = useFormState(
         product == null
             ? addProduct
@@ -396,7 +398,10 @@ export function ProductForm({
                     </div>
                 )}
             </div>
-            <SubmitButton />
+            <div className="space-x-4">
+                <SubmitButton />
+                <Button onClick={() => router.back()}>Back - Don't Save</Button>
+            </div>
         </form>
     );
 }

@@ -94,7 +94,9 @@ export default function CategoriesPage() {
 
     return (
         <div className="p-4">
-            <Button onClick={() => router.back()}>Back</Button>
+            <div className="pb-4">
+                <Button onClick={() => router.back()}>Back</Button>
+            </div>
             <h1 className="text-xl font-bold mb-4">Manage Categories</h1>
             <div className="flex space-x-2 mb-4">
                 <Input
