@@ -1,22 +1,19 @@
-import { formatCurrency } from "@/lib/formatters";
 import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "./ui/card";
-import { Button } from "./ui/button";
 import Link from "next/link";
-import Image from "next/image";
+import Carousel from "@/components/ui/productCardCarousel";
 
 type ProductCardProps = {
     id: string;
     name: string;
     priceInPence: number;
     description: string;
-    imagePath: string;
+    images: { url: string }[];
 };
 
 export function ProductCard({
@@ -24,13 +21,18 @@ export function ProductCard({
     name,
     priceInPence,
     description,
-    imagePath,
+    images,
 }: ProductCardProps) {
     return (
-        <Card className="flex overflow-hidden flex-col">
-            <div className="relative w-full aspect-w-1 aspect-h-1">
-                <Image src={imagePath} fill alt={name} />
-            </div>
+        <Card className="flex overflow-hidden flex-col h-full">
+            <Link
+                href={`/products/${id}/product`}
+                className="relative w-full pb-[100%]"
+            >
+                <div className="absolute inset-0">
+                    <Carousel images={images} />
+                </div>
+            </Link>
             <CardHeader>
                 <CardTitle>{name}</CardTitle>
                 <CardDescription>
@@ -38,24 +40,16 @@ export function ProductCard({
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
-                <p className="line-clamp-4">{description}</p>
+                <p className="line-clamp-3">{description}</p>
             </CardContent>
-            <CardFooter>
-                <Button asChild size="lg" className="w-full --primary-buttons">
-                    <Link href={`/products/${id}/product`}>Configure</Link>
-                </Button>
-                {/* <Button asChild size="lg" className="w-full --primary-buttons">
-                    <Link href={`/products/${id}/purchase`}>Purchase</Link>
-                </Button> */}
-            </CardFooter>
         </Card>
     );
 }
 
 export function ProductCardSkeleton() {
     return (
-        <Card className="overflow-hidden flex flex-col animate-pulse">
-            <div className="w-full aspect-video bg-gray-300" />
+        <Card className="overflow-hidden flex flex-col animate-pulse h-full">
+            <div className="relative w-full pb-[100%] bg-gray-300" />
             <CardHeader>
                 <CardTitle>
                     <div className="w-3/4 h-6 rounded-full bg-gray-300" />
@@ -69,9 +63,6 @@ export function ProductCardSkeleton() {
                 <div className="w-full h-4 rounded-full bg-gray-300" />
                 <div className="w-3/4 h-4 rounded-full bg-gray-300" />
             </CardContent>
-            <CardFooter>
-                <Button className="w-full" disabled size="lg"></Button>
-            </CardFooter>
         </Card>
     );
 }

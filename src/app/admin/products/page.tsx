@@ -29,9 +29,17 @@ export default function AdminProductsPage() {
         <>
             <div className="flex justify-between items-center gap-4">
                 <PageHeader>Products</PageHeader>
-                <Button asChild>
-                    <Link href="/admin/products/new">Add Product</Link>
-                </Button>
+                <div className="flex space-x-2">
+                    <Button asChild>
+                        <Link href="/admin/products/new">Add Product</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/admin/colours">Manage Colours</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/admin/categories">Manage Categories</Link>
+                    </Button>
+                </div>
             </div>
             <ProductsTable />
         </>

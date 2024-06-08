@@ -24,15 +24,21 @@ export async function emailOrderHistory(
             email: true,
             orders: {
                 select: {
-                    pricePaidInPence: true,
                     id: true,
                     createdAt: true,
-                    product: {
+                    items: {
                         select: {
-                            id: true,
-                            name: true,
-                            imagePath: true,
-                            description: true,
+                            product: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    images: { select: { url: true } },
+                                    description: true,
+                                },
+                            },
+                            priceInPence: true,
+                            quantity: true,
+                            colour: true,
                         },
                     },
                 },
@@ -47,25 +53,40 @@ export async function emailOrderHistory(
         };
     }
 
-    const orders = user.orders.map(async (order) => {
-        return {
-            ...order,
-            downloadVerificationId: (
-                await db.downloadVerification.create({
-                    data: {
-                        expiresAt: new Date(Date.now() + 24 * 1000 * 60 * 60),
-                        productId: order.product.id,
-                    },
-                })
-            ).id,
-        };
-    });
+    const orders = await Promise.all(
+        user.orders.flatMap((order) =>
+            order.items.map(async (item) => ({
+                id: order.id,
+                createdAt: order.createdAt,
+                pricePaidInPence: item.priceInPence,
+                downloadVerificationId: (
+                    await db.downloadVerification.create({
+                        data: {
+                            expiresAt: new Date(
+                                Date.now() + 24 * 1000 * 60 * 60
+                            ),
+                            productId: item.product.id,
+                        },
+                    })
+                ).id,
+                quantity: item.quantity,
+                colour: item.colour ?? "No Colour Specified",
+                product: {
+                    name: item.product.name,
+                    description: item.product.description,
+                    imagePath:
+                        item.product.images[0]?.url ??
+                        "/default-image-path.jpg",
+                },
+            }))
+        )
+    );
 
     const data = await resend.emails.send({
         from: `Support <${process.env.SENDER_EMAIL}>`,
         to: user.email,
         subject: "Order History",
-        react: <OrderHistoryEmail orders={await Promise.all(orders)} />,
+        react: <OrderHistoryEmail orders={orders} />,
     });
 
     if (data.error) {

@@ -8,27 +8,51 @@ datasource db {
 }
 
 model Product {
-  id                     String    @id @default(uuid())
+  id                     String         @id @default(uuid())
   name                   String
   priceInPence           Int
-  filePath               String
-  imagePath              String
   description            String
-  lengthInMm             Int
-  widthInMm              Int
-  heightInMm             Int
-  isAvailableForPurchase Boolean   @default(true)
+  lengthInMm             Int?
+  widthInMm              Int?
+  heightInMm             Int?
+  isAvailableForPurchase Boolean        @default(true)
   availableQuantity      Int
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  filePath               String 
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
   orders                 OrderItem[]
   downloadVerifications  DownloadVerification[]
-  colours                Colour[]
+  colours                ProductColour[]
+  categories             ProductCategory[]
+  images                 Image[]
+}
+
+model GlobalCategory {
+  id        String         @id @default(uuid())
+  name      String         @unique
+  order     Int            @default(0)
+  products  ProductCategory[]
+}
+
+model ProductCategory {
+  id           String        @id @default(uuid())
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId    String
+  globalCategory GlobalCategory  @relation(fields: [globalCategoryId], references: [id], onDelete: Cascade)
+  globalCategoryId String
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
+  name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
   orders    Order[]
@@ -43,6 +67,8 @@ model Order {
   shippingAddressId    String?           @unique
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @default(now())
+  status               String            @default("Pending")
+  customerName         String
 }
 
 model OrderItem {
@@ -76,9 +102,36 @@ model DownloadVerification {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
-model Colour {
+model GlobalColour {
+  id        String         @id @default(uuid())
+  name      String         @unique
+  products  ProductColour[]
+}
+
+model ProductColour {
+  id           String        @id @default(uuid())
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId    String
+  globalColour GlobalColour  @relation(fields: [globalColourId], references: [id], onDelete: Cascade)
+  globalColourId String
+}
+
+model Cart {
+  id        String      @id @default(uuid())
+  items     CartItem[]
+  totalAmount Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
   id        String   @id @default(uuid())
-  name      String
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  colour    String
+  price     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }

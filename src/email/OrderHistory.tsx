@@ -17,6 +17,8 @@ type OrderHistoryEmailProps = {
         pricePaidInPence: number;
         createdAt: Date;
         downloadVerificationId: string;
+        quantity: number;
+        colour: string;
         product: {
             name: string;
             imagePath: string;
@@ -32,11 +34,12 @@ OrderHistoryEmail.PreviewProps = {
             createdAt: new Date(),
             pricePaidInPence: 10000,
             downloadVerificationId: crypto.randomUUID(),
+            quantity: 1,
+            colour: "Red",
             product: {
                 name: "Product name",
                 description: "Some description",
-                imagePath:
-                    "/products/5aba7442-e4a5-4d2e-bfa7-5bd358cdad64-02 - What Is Next.js.jpg",
+                imagePath: "/products/1",
             },
         },
         {
@@ -44,15 +47,18 @@ OrderHistoryEmail.PreviewProps = {
             createdAt: new Date(),
             pricePaidInPence: 2000,
             downloadVerificationId: crypto.randomUUID(),
+            quantity: 2,
+            colour: "Blue",
             product: {
                 name: "Product name 2",
                 description: "Some other desc",
-                imagePath:
-                    "/products/db3035a5-e762-41b0-996f-d54ec730bc9c-01 - Course Introduction.jpg",
+                imagePath: "/products/2",
             },
         },
     ],
 } satisfies OrderHistoryEmailProps;
+
+const dateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
 
 export default function OrderHistoryEmail({ orders }: OrderHistoryEmailProps) {
     return (
@@ -66,8 +72,9 @@ export default function OrderHistoryEmail({ orders }: OrderHistoryEmailProps) {
                         {orders.map((order, index) => (
                             <React.Fragment key={order.id}>
                                 <OrderInformation
-                                    order={order}
                                     product={order.product}
+                                    quantity={order.quantity}
+                                    colour={order.colour}
                                     downloadVerificationId={
                                         order.downloadVerificationId
                                     }

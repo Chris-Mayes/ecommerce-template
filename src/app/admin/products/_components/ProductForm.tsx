@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,22 +9,47 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
 import { addProduct, updateProduct } from "../../_actions/products";
 import { useFormState, useFormStatus } from "react-dom";
-import { Product, Colour } from "@prisma/client";
 import Image from "next/image";
+import { Product, Image as ImageType } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
-type ProductWithColours = Product & {
-    colours: Colour[];
+type ProductWithColoursAndCategories = Product & {
+    colours: { id: string; globalColour: { id: string; name: string } }[];
+    categories: { id: string; globalCategory: { id: string; name: string } }[];
+    images: ImageType[];
 };
+
+type FormErrors =
+    | {
+          [key: string]: string[] | undefined;
+      }
+    | {
+          name?: string[];
+          description?: string[];
+          priceInPence?: string[];
+          availableQuantity?: string[];
+          lengthInMm?: string[];
+          widthInMm?: string[];
+          heightInMm?: string[];
+          file?: string[];
+          colours?: string[];
+          categories?: string[];
+          images?: string[];
+      };
 
 export function ProductForm({
     product,
 }: {
-    product?: ProductWithColours | null;
+    product?: ProductWithColoursAndCategories | null;
 }) {
-    const [error, action] = useFormState(
-        product == null ? addProduct : updateProduct.bind(null, product.id),
+    const router = useRouter();
+    const [error, action, state] = useFormState(
+        product == null
+            ? addProduct
+            : updateProduct.bind(null, product?.id || ""),
         {}
-    );
+    ) as [FormErrors | undefined, (formData: FormData) => void, unknown];
+
     const [priceInPence, setPriceInPence] = useState<number | undefined>(
         product?.priceInPence
     );
@@ -31,30 +57,108 @@ export function ProductForm({
         number | undefined
     >(product?.availableQuantity);
     const [colours, setColours] = useState<string[]>(
-        product?.colours?.map((c) => c.name) || []
+        product?.colours?.map((c) => c.globalColour.id) || []
     );
-    const [newColour, setNewColour] = useState<string>("");
+    const [categories, setCategories] = useState<string | null>(
+        product?.categories?.[0]?.globalCategory?.id || null
+    );
     const [lengthInMm, setLengthInMm] = useState<number | undefined>(
-        product?.lengthInMm
+        product?.lengthInMm ?? undefined
     );
     const [widthInMm, setWidthInMm] = useState<number | undefined>(
-        product?.widthInMm
+        product?.widthInMm ?? undefined
     );
     const [heightInMm, setHeightInMm] = useState<number | undefined>(
-        product?.heightInMm
+        product?.heightInMm ?? undefined
+    );
+    const [images, setImages] = useState<File[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>(
+        product?.images?.map((image) => image.url) || []
     );
 
-    const addColour = () => {
-        if (newColour && !colours.includes(newColour)) {
-            setColours([...colours, newColour]);
-            setNewColour("");
+    const [availableColours, setAvailableColours] = useState<
+        { value: string; label: string }[]
+    >([]);
+    const [availableCategories, setAvailableCategories] = useState<
+        { value: string; label: string }[]
+    >([]);
+
+    useEffect(() => {
+        return () => {
+            imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+        };
+    }, [imagePreviews]);
+
+    useEffect(() => {
+        async function fetchAvailableColours() {
+            const res = await fetch("/api/colours");
+            const data = await res.json();
+            setAvailableColours(
+                data.map((colour: { id: string; name: string }) => ({
+                    value: colour.id,
+                    label: colour.name,
+                }))
+            );
         }
-    };
+        fetchAvailableColours();
+    }, []);
+
+    useEffect(() => {
+        async function fetchAvailableCategories() {
+            const res = await fetch("/api/categories");
+            const data = await res.json();
+            setAvailableCategories(
+                data.map((category: { id: string; name: string }) => ({
+                    value: category.id,
+                    label: category.name,
+                }))
+            );
+        }
+        fetchAvailableCategories();
+    }, []);
+
+    useEffect(() => {
+        if (product && product.colours) {
+            setColours(product.colours.map((c) => c.globalColour.id));
+        }
+        if (product && product.categories) {
+            setCategories(product.categories[0]?.globalCategory.id || null);
+        }
+    }, [product]);
+
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        setImages((prev) => [...prev, ...acceptedFiles]);
+        const newPreviews = acceptedFiles.map((file) =>
+            URL.createObjectURL(file)
+        );
+        setImagePreviews((prev) => [...prev, ...newPreviews]);
+    }, []);
+
+    const { getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        accept: {
+            "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+        },
+    });
 
     return (
-        <form action={action} className="space-y-8">
+        <form
+            onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                images.forEach((image) => {
+                    formData.append("images", image);
+                });
+                formData.append("colours", JSON.stringify(colours));
+                if (categories) {
+                    formData.append("categories", JSON.stringify([categories]));
+                }
+                action(formData);
+            }}
+            className="space-y-8"
+        >
             <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Name - Required</Label>
                 <Input
                     type="text"
                     id="name"
@@ -62,12 +166,14 @@ export function ProductForm({
                     required
                     defaultValue={product?.name || ""}
                 />
-                {error.name && (
-                    <div className="text-destructive">{error.name}</div>
+                {error?.name && (
+                    <div className="text-destructive">
+                        {error.name.join(", ")}
+                    </div>
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="priceInPence">Price In Pence</Label>
+                <Label htmlFor="priceInPence">Price In Pence - Required</Label>
                 <Input
                     type="number"
                     id="priceInPence"
@@ -81,63 +187,98 @@ export function ProductForm({
                 <div className="text-muted-foreground">
                     {formatCurrency((priceInPence || 0) / 100)}
                 </div>
-                {error.priceInPence && (
-                    <div className="text-destructive">{error.priceInPence}</div>
+                {error?.priceInPence && (
+                    <div className="text-destructive">
+                        {error.priceInPence.join(", ")}
+                    </div>
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description - Required</Label>
                 <Textarea
                     id="description"
                     name="description"
                     required
                     defaultValue={product?.description}
                 />
-                {error.description && (
-                    <div className="text-destructive">{error.description}</div>
+                {error?.description && (
+                    <div className="text-destructive">
+                        {error.description.join(", ")}
+                    </div>
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="lengthInMm">Length (mm)</Label>
+                <p>
+                    <i>
+                        Note: Leave all dimension fields blank or 0 to exclude
+                        from product page
+                    </i>
+                </p>
+
+                <Label htmlFor="lengthInMm">Length (mm) - Not required</Label>
                 <Input
                     type="number"
                     id="lengthInMm"
                     name="lengthInMm"
-                    required
-                    value={lengthInMm}
+                    value={lengthInMm !== undefined ? lengthInMm : ""}
                     onChange={(e) =>
-                        setLengthInMm(Number(e.target.value) || undefined)
+                        setLengthInMm(
+                            e.target.value === ""
+                                ? undefined
+                                : Number(e.target.value)
+                        )
                     }
                 />
+                {error?.lengthInMm && (
+                    <div className="text-destructive">
+                        {error.lengthInMm.join(", ")}
+                    </div>
+                )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="widthInMm">Width (mm)</Label>
+                <Label htmlFor="widthInMm">Width (mm) - Not required</Label>
                 <Input
                     type="number"
                     id="widthInMm"
                     name="widthInMm"
-                    required
-                    value={widthInMm}
+                    value={widthInMm !== undefined ? widthInMm : ""}
                     onChange={(e) =>
-                        setWidthInMm(Number(e.target.value) || undefined)
+                        setWidthInMm(
+                            e.target.value === ""
+                                ? undefined
+                                : Number(e.target.value)
+                        )
                     }
                 />
+                {error?.widthInMm && (
+                    <div className="text-destructive">
+                        {error.widthInMm.join(", ")}
+                    </div>
+                )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="heightInMm">Height (mm)</Label>
+                <Label htmlFor="heightInMm">Height (mm) - Not required</Label>
                 <Input
                     type="number"
                     id="heightInMm"
                     name="heightInMm"
-                    required
-                    value={heightInMm}
+                    value={heightInMm !== undefined ? heightInMm : ""}
                     onChange={(e) =>
-                        setHeightInMm(Number(e.target.value) || undefined)
+                        setHeightInMm(
+                            e.target.value === ""
+                                ? undefined
+                                : Number(e.target.value)
+                        )
                     }
                 />
+                {error?.heightInMm && (
+                    <div className="text-destructive">
+                        {error.heightInMm.join(", ")}
+                    </div>
+                )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="file">File</Label>
+                <Label htmlFor="file">File - Required</Label>
                 <Input
                     type="file"
                     id="file"
@@ -149,73 +290,96 @@ export function ProductForm({
                         {product.filePath}
                     </div>
                 )}
-                {error.file && (
-                    <div className="text-destructive">{error.file}</div>
+                {error?.file && (
+                    <div className="text-destructive">
+                        {error.file.join(", ")}
+                    </div>
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="image">Image</Label>
-                <Input
-                    type="file"
-                    id="image"
-                    name="image"
-                    required={product == null}
-                />
-                {product != null && (
-                    <Image
-                        src={product.imagePath}
-                        height="400"
-                        width="400"
-                        alt="Product Image"
-                    />
-                )}
-                {error.image && (
-                    <div className="text-destructive">{error.image}</div>
-                )}
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="colours">Colours</Label>
-                <div className="flex space-x-2">
-                    <Input
-                        type="text"
-                        id="colours"
-                        name="colours"
-                        value={newColour}
-                        onChange={(e) => setNewColour(e.target.value)}
-                    />
-                    <Button type="button" onClick={addColour}>
-                        Add Colour
-                    </Button>
+                <Label htmlFor="images">Images - Required</Label>
+                <div {...getRootProps({ className: "dropzone" })}>
+                    <input {...getInputProps()} />
+                    <p>
+                        Drag 'n' drop some files here, or click to select files
+                    </p>
                 </div>
-                <div className="space-y-2">
-                    {colours.map((colour, index) => (
-                        <div
+                <div className="flex space-x-2 mt-2">
+                    {imagePreviews.map((src, index) => (
+                        <Image
                             key={index}
-                            className="flex items-center space-x-2"
-                        >
-                            <span>{colour}</span>
-                            <Button
-                                type="button"
-                                onClick={() =>
-                                    setColours(
-                                        colours.filter((c) => c !== colour)
-                                    )
-                                }
-                            >
-                                Remove
-                            </Button>
-                        </div>
+                            src={src}
+                            height={100}
+                            width={100}
+                            alt="Product Image Preview"
+                            className="border p-1"
+                        />
                     ))}
                 </div>
-                {/* Hidden input to pass colours */}
-                <input
-                    type="hidden"
-                    name="colours"
-                    value={JSON.stringify(colours)}
-                />
+                {error?.images && (
+                    <div className="text-destructive">
+                        {error.images.join(", ")}
+                    </div>
+                )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="availableQuantity">Available Quantity</Label>
+                <Label htmlFor="colours">Colours - Required (at least 1)</Label>
+                <div className="flex flex-wrap space-x-2">
+                    {availableColours.map((colour) => (
+                        <Button
+                            key={colour.value}
+                            type="button"
+                            variant={
+                                colours.includes(colour.value)
+                                    ? "default"
+                                    : "outline"
+                            }
+                            onClick={() =>
+                                setColours((prev) =>
+                                    prev.includes(colour.value)
+                                        ? prev.filter((c) => c !== colour.value)
+                                        : [...prev, colour.value]
+                                )
+                            }
+                        >
+                            {colour.label}
+                        </Button>
+                    ))}
+                </div>
+                {error?.colours && (
+                    <div className="text-destructive">
+                        {error.colours.join(", ")}
+                    </div>
+                )}
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="categories">Categories - Required</Label>
+                <div className="flex flex-wrap space-x-2">
+                    {availableCategories.map((category) => (
+                        <Button
+                            key={category.value}
+                            type="button"
+                            variant={
+                                categories === category.value
+                                    ? "default"
+                                    : "outline"
+                            }
+                            onClick={() => setCategories(category.value)}
+                        >
+                            {category.label}
+                        </Button>
+                    ))}
+                </div>
+                {error?.categories && (
+                    <div className="text-destructive">
+                        {error.categories.join(", ")}
+                    </div>
+                )}
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="availableQuantity">
+                    Available Quantity - Required
+                </Label>
                 <Input
                     type="number"
                     id="availableQuantity"
@@ -228,8 +392,16 @@ export function ProductForm({
                         )
                     }
                 />
+                {error?.availableQuantity && (
+                    <div className="text-destructive">
+                        {error.availableQuantity.join(", ")}
+                    </div>
+                )}
             </div>
-            <SubmitButton />
+            <div className="space-x-4">
+                <SubmitButton />
+                <Button onClick={() => router.back()}>Back - Don't Save</Button>
+            </div>
         </form>
     );
 }

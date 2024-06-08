@@ -5,7 +5,7 @@
 /* HSL (Hue, Saturation, Lightness) */
 @layer base {
     :root {
-        --background: 0 0% 85%;
+        --background: 0 0% 100%;
         --foreground: 222.2 1% 4.9%;
 
         --card: 0 0% 100%;
@@ -15,11 +15,13 @@
         --popover-foreground: 222.2 84% 4.9%;
 
         /* banner/buttons */
-        --primary: 0 0% 85%;
+        --primary: 233 78% 88%;
         --primary-foreground: 210 40% 98%;
 
-        --primary-hover: 206, 100%, 37%;
-        --primary-buttons: 208, 98%, 36%;
+        --primary-hover: 233 78% 78%;
+        --primary-buttons: 233 78% 68%;
+
+        --primary-red: 12 90% 60%;
 
         --secondary: 210 40% 96.1%;
         --secondary-foreground: 222.2 47.4% 11.2%;
@@ -73,8 +75,9 @@
 
 /* General scrollbar settings */
 html {
-    overflow-y: scroll; /* Always show vertical scrollbar */
-    scrollbar-width: none; /* Hide scrollbar */
+    overflow-y: scroll;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
 }
 
 @layer base {
@@ -106,4 +109,47 @@ input[type="number"]::-webkit-inner-spin-button {
 
 input[type="number"] {
     -moz-appearance: textfield; /* For Firefox */
+}
+
+.custom-icon-size {
+    font-size: 1.3rem;
+}
+
+/* Truncate product name with ellipsis if too long */
+.product-name-container {
+    position: relative;
+    width: 60%;
+    overflow: hidden;
+}
+
+.product-name {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Ensure alert message wraps onto multiple lines */
+.alert-message {
+    max-width: 90%;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.dropdown-cart {
+    scrollbar-color: #c9c9c9 transparent;
+    scrollbar-width: none; /* Firefox */
+}
+
+@media (max-width: 768px) {
+    .dropdown-cart {
+        position: fixed;
+        top: 6rem;
+        width: 90%;
+        max-width: 400px;
+        left: 48%;
+        transform: translateX(-50%);
+        right: auto;
+    }
 }
