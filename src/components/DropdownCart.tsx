@@ -170,7 +170,7 @@ export default function DropdownCart() {
                                 </p>
                             ) : (
                                 <>
-                                    <div className="max-h-96 overflow-y-auto">
+                                    <div className="max-h-96 overflow-y-auto overflow-x-hidden">
                                         {cart.map((item, index) => {
                                             const itemKey = `${item.productId}-${item.colour}`;
                                             return (
@@ -178,7 +178,7 @@ export default function DropdownCart() {
                                                     key={index}
                                                     className="relative flex items-center py-2"
                                                 >
-                                                    <div className="relative w-28 h-28">
+                                                    <div className="relative w-28 h-28 flex-shrink-0">
                                                         <Image
                                                             src={item.imagePath}
                                                             alt={item.name}
@@ -190,9 +190,13 @@ export default function DropdownCart() {
                                                         />
                                                     </div>
                                                     <div className="ml-4 flex-1">
-                                                        <h2 className="text-lg font-bold text-black">
-                                                            {item.name}
-                                                        </h2>
+                                                        <div
+                                                            className={`product-name-container`}
+                                                        >
+                                                            <h2 className="product-name text-lg font-bold text-black whitespace-nowrap">
+                                                                {item.name}
+                                                            </h2>
+                                                        </div>
                                                         <p className="text-sm text-gray-500">
                                                             Colour:{" "}
                                                             {item.colour}
@@ -207,7 +211,7 @@ export default function DropdownCart() {
                                                         <div className="flex items-center mt-2 relative">
                                                             {alertMessage?.itemKey ===
                                                                 itemKey && (
-                                                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 p-2 bg-primary-red text-white text-xs rounded-md shadow-lg">
+                                                                <div className="alert-message absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 p-2 bg-primary-red text-white text-xs rounded-md shadow-lg">
                                                                     {
                                                                         alertMessage.message
                                                                     }

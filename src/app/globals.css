@@ -75,8 +75,8 @@
 
 /* General scrollbar settings */
 html {
-    overflow-y: scroll; /* Always show vertical scrollbar */
-    scrollbar-width: none; /* Hide scrollbar */
+    overflow-y: scroll;
+    scrollbar-width: none;
     scroll-behavior: smooth;
 }
 
@@ -113,6 +113,33 @@ input[type="number"] {
 
 .custom-icon-size {
     font-size: 1.3rem;
+}
+
+/* Truncate product name with ellipsis if too long */
+.product-name-container {
+    position: relative;
+    width: 60%;
+    overflow: hidden;
+}
+
+.product-name {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Ensure alert message wraps onto multiple lines */
+.alert-message {
+    max-width: 90%;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.dropdown-cart {
+    scrollbar-color: #c9c9c9 transparent;
+    scrollbar-width: none; /* Firefox */
 }
 
 @media (max-width: 768px) {
