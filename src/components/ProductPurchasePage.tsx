@@ -31,7 +31,7 @@ export default function ProductPurchaseForm({
     const [quantity, setQuantity] = useState(1);
     const [colour, setColour] = useState(colours[0]?.name || "");
     const { addToCart, cart } = useCart();
-    const [alertMessage, setAlertMessage] = useState<string | null>(null);
+    const [alertMessages, setAlertMessages] = useState<string[]>([]);
     const alertTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleQuantityChange = (value: number) => {
@@ -49,22 +49,22 @@ export default function ProductPurchaseForm({
     const isAvailable = availableQuantity > 0;
 
     const showAlert = (message: string) => {
-        if (alertTimeoutRef.current) {
-            clearTimeout(alertTimeoutRef.current);
+        if (message !== "Added to basket!") {
+            setAlertMessages((prevMessages) =>
+                prevMessages.filter((msg) => msg === "Added to basket!")
+            );
         }
 
-        setAlertMessage(message);
+        setAlertMessages((prevMessages) => [...prevMessages, message]);
 
         alertTimeoutRef.current = setTimeout(() => {
-            setAlertMessage(null);
+            setAlertMessages((prevMessages) =>
+                prevMessages.filter((msg) => msg !== message)
+            );
         }, 4000); // Hide alert after 4 seconds
     };
 
     const handleAddToCart = () => {
-        if (alertMessage) {
-            return;
-        }
-
         const itemInCart = cart.find(
             (item) => item.productId === productId && item.colour === colour
         );
@@ -153,19 +153,24 @@ export default function ProductPurchaseForm({
             >
                 {isAvailable ? "Add to Cart" : "Out of Stock"}
             </Button>
-            <Transition
-                show={!!alertMessage}
-                enter="transition-opacity duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="transition-opacity duration-300"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-            >
-                <div className="mt-4 w-2/3 p-4 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
-                    {alertMessage}
-                </div>
-            </Transition>
+            <div className="space-y-2 mt-4 w-2/3">
+                {alertMessages.map((message, index) => (
+                    <Transition
+                        key={index}
+                        show={!!message}
+                        enter="transition-opacity duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="transition-opacity duration-300"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="p-4 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+                            {message}
+                        </div>
+                    </Transition>
+                ))}
+            </div>
         </div>
     );
 }
