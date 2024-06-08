@@ -117,7 +117,7 @@ function CategoryTree({
     onCategoryClick: (category: string) => void;
 }) {
     return (
-        <div className="w-48 border-r border-gray-400 sticky top-40 max-h-[calc(100vh-12rem)] overflow-auto">
+        <div className="w-48 border-r border-gray-400 sticky top-40 max-h-[calc(100vh-12rem)] overflow-y-none pr-9">
             <h3 className="text-xl font-bold mb-4">Categories</h3>
             <ul className="space-y-2">
                 {categories.map((category) => (

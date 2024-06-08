@@ -24,7 +24,7 @@ export function ProductCard({
     images,
 }: ProductCardProps) {
     return (
-        <Card className="flex overflow-hidden flex-col">
+        <Card className="flex overflow-hidden flex-col h-full">
             <Link
                 href={`/products/${id}/product`}
                 className="relative w-full pb-[100%]"
@@ -40,7 +40,7 @@ export function ProductCard({
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
-                <p className="line-clamp-4">{description}</p>
+                <p className="line-clamp-3">{description}</p>
             </CardContent>
         </Card>
     );
@@ -48,7 +48,7 @@ export function ProductCard({
 
 export function ProductCardSkeleton() {
     return (
-        <Card className="overflow-hidden flex flex-col animate-pulse">
+        <Card className="overflow-hidden flex flex-col animate-pulse h-full">
             <div className="relative w-full pb-[100%] bg-gray-300" />
             <CardHeader>
                 <CardTitle>

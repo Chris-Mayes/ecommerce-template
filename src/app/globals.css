@@ -116,17 +116,9 @@ input[type="number"] {
 }
 
 @media (max-width: 768px) {
-    .dropdown-container {
-        width: 100%;
-        position: relative;
-        display: flex;
-        justify-content: center;
-        top: 1.5rem;
-        right: 0.2em;
-    }
     .dropdown-cart {
         position: fixed;
-        top: 5rem;
+        top: 6rem;
         width: 90%;
         max-width: 400px;
         left: 48%;
