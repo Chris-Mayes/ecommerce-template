@@ -6,6 +6,10 @@ type CarouselProps = {
     images: { url: string }[];
 };
 
+const getFullImageUrl = (relativeUrl: string) => {
+    return `https://climbing-shop-851c1ee23d02.herokuapp.com${relativeUrl}`;
+};
+
 const Carousel = ({ images }: CarouselProps) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -17,9 +21,11 @@ const Carousel = ({ images }: CarouselProps) => {
         return () => clearInterval(interval);
     }, [images.length]);
 
+    console.log(
+        "Images:",
+        images.map((img) => getFullImageUrl(img.url))
+    );
     if (!images || images.length === 0) return null;
-
-    console.log("Image URLs:", images);
 
     return (
         <div className="relative w-full h-full">
@@ -31,7 +37,7 @@ const Carousel = ({ images }: CarouselProps) => {
                     }`}
                 >
                     <Image
-                        src={image.url}
+                        src={getFullImageUrl(image.url)}
                         fill
                         style={{ objectFit: "cover" }}
                         alt={`Slide ${index + 1}`}
