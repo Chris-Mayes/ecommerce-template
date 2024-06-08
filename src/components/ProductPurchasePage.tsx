@@ -103,7 +103,7 @@ export default function ProductPurchaseForm({
                     <button
                         type="button"
                         onClick={() => handleQuantityChange(quantity - 1)}
-                        className="px-3 py-2 border border-gray-300 rounded-l-md shadow-sm bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                        className="px-3 py-2 border border-primary rounded-l-md shadow-sm bg-primary-buttons text-white hover:bg-primary-hover disabled:opacity-50"
                         disabled={quantity <= 1}
                     >
                         -
@@ -111,14 +111,14 @@ export default function ProductPurchaseForm({
                     <input
                         type="text"
                         id="quantity"
-                        className="w-12 px-3 py-2 border-t border-b border-gray-300 shadow-sm text-center"
+                        className="w-12 px-3 py-2 text-center border-0"
                         value={quantity}
                         readOnly
                     />
                     <button
                         type="button"
                         onClick={() => handleQuantityChange(quantity + 1)}
-                        className="px-3 py-2 border border-gray-300 rounded-r-md shadow-sm bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                        className="px-3 py-2 border border-primary rounded-r-md shadow-sm bg-primary-buttons text-white hover:bg-primary-hover disabled:opacity-50"
                         disabled={quantity >= availableQuantity}
                     >
                         +
@@ -135,7 +135,7 @@ export default function ProductPurchaseForm({
                 <select
                     id="colour"
                     name="colour"
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border focus:outline-none sm:text-sm rounded-md border-primary"
                     value={colour}
                     onChange={handleColourChange}
                 >
