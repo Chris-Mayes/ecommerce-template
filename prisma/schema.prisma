@@ -67,6 +67,7 @@ model Order {
   shippingAddressId    String?           @unique
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @default(now())
+  status               String            @default("Pending")
 }
 
 model OrderItem {

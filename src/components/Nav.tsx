@@ -7,17 +7,13 @@ import { ComponentProps, ReactNode } from "react";
 import DropdownCart from "@/components/DropdownCart";
 
 export function Nav({ children }: { children: ReactNode }) {
-    const pathname = usePathname();
-    const isCheckoutPage = pathname === "/checkout";
-
     return (
         <nav className="nav-banner bg-primary text-primary-foreground flex items-center justify-between px-4">
             <div className="flex space-x-4 items-center">{children}</div>
-            {!isCheckoutPage && (
-                <div className="flex items-center ml-4 mr-6 mt-6">
-                    <DropdownCart />
-                </div>
-            )}
+            <div className="flex items-center ml-auto">
+                <NavLink href="/trackOrder">My Orders</NavLink>
+                <DropdownCart />
+            </div>
         </nav>
     );
 }

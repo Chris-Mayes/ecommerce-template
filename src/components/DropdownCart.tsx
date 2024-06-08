@@ -133,7 +133,7 @@ export default function DropdownCart() {
     if (!isClient) return null;
 
     return (
-        <div className="fixed top-12 right-12 z-50 dropdown-container">
+        <div className="fixed top-16 right-12 z-50 dropdown-container">
             <div className="relative flex items-center">
                 <button
                     ref={buttonRef}

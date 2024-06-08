@@ -17,7 +17,8 @@ CREATE TABLE "Product" (
 -- CreateTable
 CREATE TABLE "GlobalCategory" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL
+    "name" TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0
 );
 
 -- CreateTable
@@ -53,6 +54,7 @@ CREATE TABLE "Order" (
     "shippingAddressId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "status" TEXT NOT NULL DEFAULT 'Pending',
     CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
