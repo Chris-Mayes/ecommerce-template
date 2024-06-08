@@ -148,9 +148,3 @@ export async function POST(req: NextRequest) {
         return new NextResponse("Webhook handler failed", { status: 500 });
     }
 }
-
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
