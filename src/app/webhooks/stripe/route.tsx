@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import db from "@/db/db";
 import { Resend } from "resend";
 import PurchaseReceiptEmail from "@/email/PurchaseReceipt";
+import { config as stripeConfig } from "./config";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 const resend = new Resend(process.env.RESEND_API_KEY as string);
@@ -148,3 +149,5 @@ export async function POST(req: NextRequest) {
         return new NextResponse("Webhook handler failed", { status: 500 });
     }
 }
+
+export { stripeConfig as config };
