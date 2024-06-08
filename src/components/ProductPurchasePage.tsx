@@ -93,7 +93,7 @@ export default function ProductPurchaseForm({
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 relative">
             <div className="mb-4">
                 <Label
                     htmlFor="quantity"
@@ -153,7 +153,7 @@ export default function ProductPurchaseForm({
             >
                 {isAvailable ? "Add to Cart" : "Out of Stock"}
             </Button>
-            <div className="space-y-2 mt-4 w-2/3">
+            <div className="absolute w-2/3 left-0 mt-4 space-y-2">
                 {alertMessages.map((message, index) => (
                     <Transition
                         key={index}
