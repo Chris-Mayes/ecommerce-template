@@ -105,7 +105,9 @@ export default async function ProductPage({
                     </div>
 
                     <div className="mt-auto pt-9">
-                        <p>Available Quantity: {product.availableQuantity}</p>
+                        <p className="pb-2">
+                            Available Quantity: {product.availableQuantity}
+                        </p>
                         <ProductPurchaseForm
                             productId={id}
                             productPrice={product.priceInPence}
