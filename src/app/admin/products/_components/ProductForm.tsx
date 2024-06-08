@@ -301,7 +301,8 @@ export function ProductForm({
                 <div {...getRootProps({ className: "dropzone" })}>
                     <input {...getInputProps()} />
                     <p>
-                        Drag 'n' drop some files here, or click to select files
+                        Drag &apos;n&apos; drop some files here, or click to
+                        select files
                     </p>
                 </div>
                 <div className="flex space-x-2 mt-2">
@@ -400,7 +401,9 @@ export function ProductForm({
             </div>
             <div className="space-x-4">
                 <SubmitButton />
-                <Button onClick={() => router.back()}>Back - Don't Save</Button>
+                <Button onClick={() => router.back()}>
+                    Back - Don&apos;t Save
+                </Button>
             </div>
         </form>
     );

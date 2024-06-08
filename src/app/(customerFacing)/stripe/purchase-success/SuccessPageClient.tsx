@@ -32,7 +32,7 @@ export default function SuccessPageClient({
         if (isSuccess) {
             clearCart();
         }
-    }, [isSuccess]);
+    }, [isSuccess, clearCart]);
 
     const totalPrice = useMemo(() => {
         return products.reduce((total, item) => {

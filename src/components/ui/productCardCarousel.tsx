@@ -7,8 +7,6 @@ type CarouselProps = {
 };
 
 const Carousel = ({ images }: CarouselProps) => {
-    if (!images || images.length === 0) return null;
-
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
@@ -18,6 +16,8 @@ const Carousel = ({ images }: CarouselProps) => {
 
         return () => clearInterval(interval);
     }, [images.length]);
+
+    if (!images || images.length === 0) return null;
 
     return (
         <div className="relative w-full h-full">
