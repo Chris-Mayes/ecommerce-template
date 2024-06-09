@@ -33,7 +33,9 @@ export default async function handler(
 
         console.log("Files received:", files);
 
-        const fileArray = Array.isArray(files.file) ? files.file : [files.file];
+        const fileArray = Array.isArray(files.images)
+            ? files.images
+            : [files.images];
         const filteredFiles = fileArray.filter(
             (file): file is File => file !== undefined
         );

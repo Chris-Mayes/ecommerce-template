@@ -144,9 +144,11 @@ export function ProductForm({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget as HTMLFormElement);
+
         images.forEach((image) => {
             formData.append("images", image);
         });
+
         formData.append("colours", JSON.stringify(colours));
         if (categories) {
             formData.append("categories", JSON.stringify([categories]));
