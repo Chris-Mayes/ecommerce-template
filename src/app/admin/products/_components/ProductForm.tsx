@@ -1,7 +1,4 @@
-// src/app/admin/products/_components/ProductForm.tsx
-"use client";
-
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,6 +136,7 @@ export function ProductForm({
         })
             .then((response) => response.json())
             .then((data) => {
+                console.log("Upload Response:", data);
                 const newImagePreviews = data.filePaths.map((path: string) => {
                     return `${path}`;
                 });

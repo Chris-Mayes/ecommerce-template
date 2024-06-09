@@ -1,4 +1,3 @@
-// src/pages/api/upload.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import fs from "fs";
@@ -10,7 +9,7 @@ export const config = {
     },
 };
 
-const uploadDir = path.join(process.cwd(), "public/products");
+const uploadDir = path.join(process.cwd(), "products");
 fs.mkdirSync(uploadDir, { recursive: true });
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -24,9 +23,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     form.parse(req, (err, fields, files) => {
         if (err) {
+            console.error("Error parsing files", err);
             res.status(500).json({ error: "Error parsing files" });
             return;
         }
+
+        console.log("Files:", files);
 
         const filePaths = Object.values(files).map((file: any) => {
             const fileName = file.newFilename;

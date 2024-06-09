@@ -5,7 +5,7 @@ const nextConfig = {
             {
                 protocol: "https",
                 hostname: "climbing-shop-851c1ee23d02.herokuapp.com",
-                pathname: "/**",
+                pathname: "/products/**",
             },
         ],
     },
