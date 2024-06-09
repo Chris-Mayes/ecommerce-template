@@ -127,27 +127,11 @@ export function ProductForm({
     }, [product]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        const formData = new FormData();
-        acceptedFiles.forEach((file) => {
-            formData.append("file", file);
-        });
-
-        fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                console.log("Upload Response:", data);
-                const newImagePreviews = data.filePaths.map((path: string) => {
-                    return `${path}`;
-                });
-                setImagePreviews((prev) => [...prev, ...newImagePreviews]);
-                setImages((prev) => [...prev, ...acceptedFiles]);
-            })
-            .catch((error) => {
-                console.error("Error uploading images:", error);
-            });
+        setImages((prev) => [...prev, ...acceptedFiles]);
+        const newPreviews = acceptedFiles.map((file) =>
+            URL.createObjectURL(file)
+        );
+        setImagePreviews((prev) => [...prev, ...newPreviews]);
     }, []);
 
     const { getRootProps, getInputProps } = useDropzone({
@@ -157,22 +141,32 @@ export function ProductForm({
         },
     });
 
+    const handleFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget as HTMLFormElement);
+
+        const uploadPromises = images.map(async (image) => {
+            const imageData = new FormData();
+            imageData.append("file", image);
+            const response = await fetch("/api/upload", {
+                method: "POST",
+                body: imageData,
+            });
+            const data = await response.json();
+            return data.url;
+        });
+
+        try {
+            const uploadedImageUrls = await Promise.all(uploadPromises);
+            formData.append("images", JSON.stringify(uploadedImageUrls));
+            action(formData);
+        } catch (error) {
+            console.error("Error uploading images:", error);
+        }
+    };
+
     return (
-        <form
-            onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                images.forEach((image) => {
-                    formData.append("images", image);
-                });
-                formData.append("colours", JSON.stringify(colours));
-                if (categories) {
-                    formData.append("categories", JSON.stringify([categories]));
-                }
-                action(formData);
-            }}
-            className="space-y-8"
-        >
+        <form onSubmit={handleFormSubmit} className="space-y-8">
             <div className="space-y-2">
                 <Label htmlFor="name">Name - Required</Label>
                 <Input
