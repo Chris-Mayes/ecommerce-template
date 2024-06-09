@@ -129,6 +129,7 @@ export async function updateProduct(
     const data = result.data;
     const colours = JSON.parse(data.colours);
     const categories = JSON.parse(data.categories);
+    const imageUrls = JSON.parse(data.imageUrls);
     const product = await db.product.findUnique({ where: { id } });
 
     if (product == null) return notFound();
@@ -166,9 +167,9 @@ export async function updateProduct(
         });
     }
 
-    if (data.imageUrls) {
+    if (imageUrls) {
         await db.image.deleteMany({ where: { productId: id } });
-        for (const imageUrl of data.imageUrls) {
+        for (const imageUrl of imageUrls) {
             await db.image.create({
                 data: {
                     url: imageUrl,
