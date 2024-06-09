@@ -18,7 +18,7 @@ const Carousel = ({ images }: CarouselProps) => {
     }, [images.length]);
 
     if (!images || images.length === 0) return null;
-
+    console.log("Images:", images);
     return (
         <div className="relative w-full h-full">
             {images.map((image, index) => (
