@@ -169,8 +169,13 @@ export function ProductForm({
             const data = await res.json();
             console.log("Image URLs from API:", data.urls);
 
+            formData.delete("images");
             data.urls.forEach((url: string) => {
                 formData.append("imageUrls", url);
+            });
+
+            formData.forEach((value, key) => {
+                console.log(`Key: ${key}, Value: ${value}`);
             });
 
             action(formData);

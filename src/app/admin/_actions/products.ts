@@ -40,6 +40,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 
     const result = addSchema.safeParse(entries);
     if (result.success === false) {
+        console.error("Validation failed", result.error.formErrors.fieldErrors);
         return result.error.formErrors.fieldErrors;
     }
 
