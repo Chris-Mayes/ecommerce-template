@@ -38,33 +38,39 @@ export default async function handler(
             (file): file is File => file !== undefined
         );
 
-        const uploadedFiles = filteredFiles.map(async (file) => {
-            const filePath = file.filepath as string;
-            const fileContent = fs.readFileSync(filePath);
-            const originalFilename = file.originalFilename || "unknown";
-            const fileName = `${uuidv4()}${path.extname(originalFilename)}`;
-
-            const params = {
-                Bucket: process.env.AWS_BUCKET_NAME!,
-                Key: fileName,
-                Body: fileContent,
-                ContentType: file.mimetype || "application/octet-stream",
-            };
-
-            try {
-                const data = await s3.send(new PutObjectCommand(params));
-                console.log("Uploaded file data:", data);
-                return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-            } catch (error) {
-                console.error("Error uploading to S3", error);
-                throw new Error("Error uploading to S3");
-            }
-        });
-
         try {
-            const uploadedUrls = await Promise.all(uploadedFiles);
-            console.log("Uploaded URLs:", uploadedUrls);
-            return res.status(200).json({ urls: uploadedUrls });
+            const uploadedFiles = await Promise.all(
+                filteredFiles.map(async (file) => {
+                    const filePath = file.filepath as string;
+                    const fileContent = fs.readFileSync(filePath);
+                    const originalFilename = file.originalFilename || "unknown";
+                    const fileName = `${uuidv4()}${path.extname(
+                        originalFilename
+                    )}`;
+
+                    const params = {
+                        Bucket: process.env.AWS_BUCKET_NAME!,
+                        Key: fileName,
+                        Body: fileContent,
+                        ContentType:
+                            file.mimetype || "application/octet-stream",
+                    };
+
+                    try {
+                        const data = await s3.send(
+                            new PutObjectCommand(params)
+                        );
+                        console.log("Uploaded file data:", data);
+                        return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+                    } catch (error) {
+                        console.error("Error uploading to S3", error);
+                        throw new Error("Error uploading to S3");
+                    }
+                })
+            );
+
+            console.log("Uploaded URLs:", uploadedFiles);
+            return res.status(200).json({ urls: uploadedFiles });
         } catch (error) {
             console.error("Error uploading files", error);
             return res.status(500).json({ message: "Error uploading files" });

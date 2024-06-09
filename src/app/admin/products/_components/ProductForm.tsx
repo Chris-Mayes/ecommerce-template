@@ -152,21 +152,28 @@ export function ProductForm({
             formData.append("categories", JSON.stringify([categories]));
         }
 
-        const res = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-        });
+        try {
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+            });
 
-        const data = await res.json();
-        if (res.ok) {
+            if (!res.ok) {
+                const errorData = await res.json();
+                console.error("Error uploading images:", errorData.message);
+                return;
+            }
+
+            const data = await res.json();
             console.log("Image URLs from API:", data.urls);
-            const imageUrls = data.urls;
-            imageUrls.forEach((url: string) => {
+
+            data.urls.forEach((url: string) => {
                 formData.append("imageUrls", url);
             });
+
             action(formData);
-        } else {
-            console.error("Error uploading images:", data.message);
+        } catch (error) {
+            console.error("Error during form submission:", error);
         }
     };
 
