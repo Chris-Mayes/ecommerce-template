@@ -38,6 +38,8 @@ const addSchema = z.object({
     }, "Invalid categories format"),
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
 export async function addProduct(prevState: unknown, formData: FormData) {
     const entries = Object.fromEntries(formData.entries());
 
@@ -67,7 +69,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("/api/upload", {
+        const res = await fetch(`${BASE_URL}/api/upload`, {
             method: "POST",
             body: formData,
         });
@@ -174,7 +176,7 @@ export async function updateProduct(
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("/api/upload", {
+        const res = await fetch(`${BASE_URL}/api/upload`, {
             method: "POST",
             body: formData,
         });
