@@ -1,6 +1,7 @@
+// src/app/admin/products/_components/ProductForm.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,11 +128,26 @@ export function ProductForm({
     }, [product]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        setImages((prev) => [...prev, ...acceptedFiles]);
-        const newPreviews = acceptedFiles.map((file) =>
-            URL.createObjectURL(file)
-        );
-        setImagePreviews((prev) => [...prev, ...newPreviews]);
+        const formData = new FormData();
+        acceptedFiles.forEach((file) => {
+            formData.append("file", file);
+        });
+
+        fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                const newImagePreviews = data.filePaths.map((path: string) => {
+                    return `${path}`;
+                });
+                setImagePreviews((prev) => [...prev, ...newImagePreviews]);
+                setImages((prev) => [...prev, ...acceptedFiles]);
+            })
+            .catch((error) => {
+                console.error("Error uploading images:", error);
+            });
     }, []);
 
     const { getRootProps, getInputProps } = useDropzone({
@@ -301,8 +317,7 @@ export function ProductForm({
                 <div {...getRootProps({ className: "dropzone" })}>
                     <input {...getInputProps()} />
                     <p>
-                        Drag &apos;n&apos; drop some files here, or click to
-                        select files
+                        Drag 'n' drop some files here, or click to select files
                     </p>
                 </div>
                 <div className="flex space-x-2 mt-2">
@@ -401,9 +416,7 @@ export function ProductForm({
             </div>
             <div className="space-x-4">
                 <SubmitButton />
-                <Button onClick={() => router.back()}>
-                    Back - Don&apos;t Save
-                </Button>
+                <Button onClick={() => router.back()}>Back - Don't Save</Button>
             </div>
         </form>
     );
