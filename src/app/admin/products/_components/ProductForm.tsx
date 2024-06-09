@@ -306,13 +306,8 @@ export function ProductForm({
                 )}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="file">File - Required</Label>
-                <Input
-                    type="file"
-                    id="file"
-                    name="file"
-                    required={product == null}
-                />
+                <Label htmlFor="file">File - Optional</Label>
+                <Input type="file" id="file" name="file" required={false} />
                 {product != null && (
                     <div className="text-muted-foreground">
                         {product.filePath}

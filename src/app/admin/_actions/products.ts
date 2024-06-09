@@ -5,7 +5,7 @@ import { z } from "zod";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-const fileSchema = z.instanceof(File, { message: "Required" });
+const fileSchema = z.instanceof(File, { message: "Required" }).optional();
 
 const addSchema = z.object({
     name: z.string().min(1),
@@ -15,7 +15,7 @@ const addSchema = z.object({
     lengthInMm: z.coerce.number().int().optional().nullable(),
     widthInMm: z.coerce.number().int().optional().nullable(),
     heightInMm: z.coerce.number().int().optional().nullable(),
-    file: fileSchema.refine((file) => file.size > 0, "Required"),
+    file: fileSchema,
     colours: z.string().refine((val) => {
         try {
             JSON.parse(val);
@@ -66,7 +66,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
             lengthInMm: data.lengthInMm ?? null,
             widthInMm: data.widthInMm ?? null,
             heightInMm: data.heightInMm ?? null,
-            filePath: data.file.name,
+            filePath: data.file?.name || "",
         },
     });
 
@@ -110,7 +110,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 }
 
 const editSchema = addSchema.extend({
-    file: fileSchema.optional(),
+    file: fileSchema,
     images: z.array(fileSchema).optional(),
 });
 
@@ -144,6 +144,7 @@ export async function updateProduct(
             lengthInMm: data.lengthInMm ?? null,
             widthInMm: data.widthInMm ?? null,
             heightInMm: data.heightInMm ?? null,
+            filePath: data.file?.name || product.filePath,
         },
     });
 
