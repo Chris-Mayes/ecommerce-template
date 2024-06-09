@@ -32,7 +32,14 @@ const addSchema = z.object({
             return false;
         }
     }, "Invalid categories format"),
-    imageUrls: z.array(z.string()).optional(),
+    imageUrls: z.string().refine((val) => {
+        try {
+            JSON.parse(val);
+            return Array.isArray(JSON.parse(val));
+        } catch {
+            return false;
+        }
+    }, "Invalid imageUrls format"),
 });
 
 export async function addProduct(prevState: unknown, formData: FormData) {
@@ -47,6 +54,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     const data = result.data;
     const colours = JSON.parse(data.colours);
     const categories = JSON.parse(data.categories);
+    const imageUrls = JSON.parse(data.imageUrls);
 
     const product = await db.product.create({
         data: {
@@ -80,8 +88,8 @@ export async function addProduct(prevState: unknown, formData: FormData) {
         });
     }
 
-    if (data.imageUrls) {
-        for (const imageUrl of data.imageUrls) {
+    if (imageUrls) {
+        for (const imageUrl of imageUrls) {
             await db.image.create({
                 data: {
                     url: imageUrl,

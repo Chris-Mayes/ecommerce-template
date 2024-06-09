@@ -170,9 +170,8 @@ export function ProductForm({
             console.log("Image URLs from API:", data.urls);
 
             formData.delete("images");
-            data.urls.forEach((url: string) => {
-                formData.append("imageUrls", url);
-            });
+            const imageUrls = JSON.stringify(data.urls);
+            formData.append("imageUrls", imageUrls);
 
             formData.forEach((value, key) => {
                 console.log(`Key: ${key}, Value: ${value}`);
