@@ -38,7 +38,7 @@ const addSchema = z.object({
     }, "Invalid categories format"),
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 export async function addProduct(prevState: unknown, formData: FormData) {
     const entries = Object.fromEntries(formData.entries());
@@ -64,6 +64,8 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     const data = result.data;
     const colours = JSON.parse(data.colours);
     const categories = JSON.parse(data.categories);
+
+    console.log(`BASE_URL: ${BASE_URL}`);
 
     const uploadFile = async (file: File) => {
         const formData = new FormData();

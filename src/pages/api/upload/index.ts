@@ -31,12 +31,16 @@ export default async function handler(
             return res.status(500).json({ message: "Error parsing the files" });
         }
 
+        console.log("Files received:", files);
+
         const fileArray = Array.isArray(files.files)
             ? files.files
             : [files.files];
         const filteredFiles = fileArray.filter(
             (file): file is File => file !== undefined
         );
+
+        console.log("Filtered files:", filteredFiles);
 
         const uploadedFiles = filteredFiles.map(async (file) => {
             const filePath = file.filepath as string;
@@ -53,6 +57,7 @@ export default async function handler(
 
             try {
                 const data = await s3.send(new PutObjectCommand(params));
+                console.log("Uploaded file data:", data);
                 return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
             } catch (error) {
                 console.error("Error uploading to S3", error);
@@ -62,6 +67,7 @@ export default async function handler(
 
         try {
             const uploadedUrls = await Promise.all(uploadedFiles);
+            console.log("Uploaded URLs:", uploadedUrls);
             return res.status(200).json({ urls: uploadedUrls });
         } catch (error) {
             console.error("Error uploading files", error);
