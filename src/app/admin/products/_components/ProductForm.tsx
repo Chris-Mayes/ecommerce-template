@@ -145,7 +145,7 @@ export function ProductForm({
         e.preventDefault();
         const formData = new FormData(e.currentTarget as HTMLFormElement);
         images.forEach((image) => {
-            formData.append("files", image);
+            formData.append("images", image);
         });
         formData.append("colours", JSON.stringify(colours));
         if (categories) {

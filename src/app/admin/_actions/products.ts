@@ -6,10 +6,6 @@ import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 const fileSchema = z.instanceof(File, { message: "Required" });
-const imageSchema = fileSchema.refine(
-    (file) => file.size > 0 && file.type.startsWith("image/"),
-    { message: "Invalid image file" }
-);
 
 const addSchema = z.object({
     name: z.string().min(1),
@@ -36,55 +32,20 @@ const addSchema = z.object({
             return false;
         }
     }, "Invalid categories format"),
+    imageUrls: z.array(z.string()).optional(),
 });
-
-const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 export async function addProduct(prevState: unknown, formData: FormData) {
     const entries = Object.fromEntries(formData.entries());
-
-    const images = formData
-        .getAll("images")
-        .filter((file) => file instanceof File) as File[];
 
     const result = addSchema.safeParse(entries);
     if (result.success === false) {
         return result.error.formErrors.fieldErrors;
     }
 
-    for (const image of images) {
-        const imageResult = imageSchema.safeParse(image);
-        if (!imageResult.success) {
-            return {
-                images: imageResult.error.errors.map((err) => err.message),
-            };
-        }
-    }
-
     const data = result.data;
     const colours = JSON.parse(data.colours);
     const categories = JSON.parse(data.categories);
-
-    console.log(`BASE_URL: ${BASE_URL}`);
-
-    const uploadFile = async (file: File) => {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const res = await fetch(`${BASE_URL}/api/upload`, {
-            method: "POST",
-            body: formData,
-        });
-
-        if (!res.ok) {
-            throw new Error("Error uploading file to S3");
-        }
-
-        const { url } = await res.json();
-        return url;
-    };
-
-    const imageUrls = await Promise.all(images.map(uploadFile));
 
     const product = await db.product.create({
         data: {
@@ -96,7 +57,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
             lengthInMm: data.lengthInMm ?? null,
             widthInMm: data.widthInMm ?? null,
             heightInMm: data.heightInMm ?? null,
-            filePath: await uploadFile(data.file),
+            filePath: data.file.name,
         },
     });
 
@@ -118,13 +79,15 @@ export async function addProduct(prevState: unknown, formData: FormData) {
         });
     }
 
-    for (const imageUrl of imageUrls) {
-        await db.image.create({
-            data: {
-                url: imageUrl,
-                productId: product.id,
-            },
-        });
+    if (data.imageUrls) {
+        for (const imageUrl of data.imageUrls) {
+            await db.image.create({
+                data: {
+                    url: imageUrl,
+                    productId: product.id,
+                },
+            });
+        }
     }
 
     revalidatePath("/");
@@ -139,7 +102,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 
 const editSchema = addSchema.extend({
     file: fileSchema.optional(),
-    images: z.array(imageSchema).optional(),
+    images: z.array(fileSchema).optional(),
 });
 
 export async function updateProduct(
@@ -149,22 +112,9 @@ export async function updateProduct(
 ) {
     const entries = Object.fromEntries(formData.entries());
 
-    const images = formData
-        .getAll("images")
-        .filter((file) => file instanceof File) as File[];
-
     const result = editSchema.safeParse(entries);
     if (result.success === false) {
         return result.error.formErrors.fieldErrors;
-    }
-
-    for (const image of images) {
-        const imageResult = imageSchema.safeParse(image);
-        if (!imageResult.success) {
-            return {
-                images: imageResult.error.errors.map((err) => err.message),
-            };
-        }
     }
 
     const data = result.data;
@@ -174,38 +124,6 @@ export async function updateProduct(
 
     if (product == null) return notFound();
 
-    const uploadFile = async (file: File) => {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const res = await fetch(`${BASE_URL}/api/upload`, {
-            method: "POST",
-            body: formData,
-        });
-
-        if (!res.ok) {
-            throw new Error("Error uploading file to S3");
-        }
-
-        const { url } = await res.json();
-        return url;
-    };
-
-    let filePath = product.filePath;
-    if (data.file != null && data.file.size > 0) {
-        filePath = await uploadFile(data.file);
-    }
-
-    const imageUrls = [];
-    if (images.length > 0) {
-        await db.image.deleteMany({ where: { productId: id } });
-
-        for (const image of images) {
-            const imageUrl = await uploadFile(image);
-            imageUrls.push(imageUrl);
-        }
-    }
-
     await db.product.update({
         where: { id },
         data: {
@@ -213,7 +131,6 @@ export async function updateProduct(
             description: data.description,
             priceInPence: data.priceInPence,
             availableQuantity: data.availableQuantity,
-            filePath,
             lengthInMm: data.lengthInMm ?? null,
             widthInMm: data.widthInMm ?? null,
             heightInMm: data.heightInMm ?? null,
@@ -240,13 +157,16 @@ export async function updateProduct(
         });
     }
 
-    for (const imageUrl of imageUrls) {
-        await db.image.create({
-            data: {
-                url: imageUrl,
-                productId: id,
-            },
-        });
+    if (data.imageUrls) {
+        await db.image.deleteMany({ where: { productId: id } });
+        for (const imageUrl of data.imageUrls) {
+            await db.image.create({
+                data: {
+                    url: imageUrl,
+                    productId: id,
+                },
+            });
+        }
     }
 
     revalidatePath("/");
