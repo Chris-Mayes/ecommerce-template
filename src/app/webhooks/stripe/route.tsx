@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
                 const name = charge.billing_details.name ?? "Customer";
                 const shippingAddress = charge.shipping?.address;
 
-                console.log(`Charge succeeded: ${JSON.stringify(charge)}`);
+                // console.log(`Charge succeeded: ${JSON.stringify(charge)}`);
 
                 const cart = await db.cart.findUnique({
                     where: { id: cartId },
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
                     0
                 );
 
-                console.log(`Created order: ${JSON.stringify(order)}`);
+                // console.log(`Created order: ${JSON.stringify(order)}`);
 
                 const products = await Promise.all(
                     cart.items.map(async (item) => {
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
                 return new NextResponse();
             }
             default:
-                console.log(`Unhandled event type: ${event.type}`);
+                // console.log(`Unhandled event type: ${event.type}`);
                 return new NextResponse(`Unhandled event type: ${event.type}`, {
                     status: 200,
                 });

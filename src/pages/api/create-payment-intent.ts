@@ -45,7 +45,7 @@ export default async function handler(
                 metadata: { cartId: cartDetails.id },
             });
 
-            console.log("Payment intent created:", paymentIntent);
+            // console.log("Payment intent created:", paymentIntent);
             res.status(200).json({ clientSecret: paymentIntent.client_secret });
         } catch (error) {
             console.error("Error creating payment intent:", error);

@@ -48,7 +48,7 @@ function ProductsWithCategoryTree() {
         const fetchData = async () => {
             const response = await fetch("/api/get-products-by-category");
             const data = await response.json();
-            console.log("Fetched Data:", data);
+            // console.log("Fetched Data:", data);
             setProductsByCategory(data);
         };
 

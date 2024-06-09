@@ -141,32 +141,36 @@ export function ProductForm({
         },
     });
 
-    const handleFormSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget as HTMLFormElement);
+        images.forEach((image) => {
+            formData.append("files", image);
+        });
+        formData.append("colours", JSON.stringify(colours));
+        if (categories) {
+            formData.append("categories", JSON.stringify([categories]));
+        }
 
-        const uploadPromises = images.map(async (image) => {
-            const imageData = new FormData();
-            imageData.append("file", image);
-            const response = await fetch("/api/upload", {
-                method: "POST",
-                body: imageData,
-            });
-            const data = await response.json();
-            return data.url;
+        const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
         });
 
-        try {
-            const uploadedImageUrls = await Promise.all(uploadPromises);
-            formData.append("images", JSON.stringify(uploadedImageUrls));
+        const data = await res.json();
+        if (res.ok) {
+            const imageUrls = data.urls;
+            imageUrls.forEach((url: string) => {
+                formData.append("imageUrls", url);
+            });
             action(formData);
-        } catch (error) {
-            console.error("Error uploading images:", error);
+        } else {
+            console.error("Error uploading images:", data.message);
         }
     };
 
     return (
-        <form onSubmit={handleFormSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-2">
                 <Label htmlFor="name">Name - Required</Label>
                 <Input

@@ -4,8 +4,8 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: "https",
-                hostname: "climbing-shop-851c1ee23d02.herokuapp.com",
-                pathname: "/products/**",
+                hostname: `${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com`,
+                pathname: "/**",
             },
         ],
     },
