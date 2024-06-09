@@ -159,6 +159,7 @@ export function ProductForm({
 
         const data = await res.json();
         if (res.ok) {
+            console.log("Image URLs from API:", data.urls);
             const imageUrls = data.urls;
             imageUrls.forEach((url: string) => {
                 formData.append("imageUrls", url);

@@ -33,14 +33,10 @@ export default async function handler(
 
         console.log("Files received:", files);
 
-        const fileArray = Array.isArray(files.files)
-            ? files.files
-            : [files.files];
+        const fileArray = Array.isArray(files.file) ? files.file : [files.file];
         const filteredFiles = fileArray.filter(
             (file): file is File => file !== undefined
         );
-
-        console.log("Filtered files:", filteredFiles);
 
         const uploadedFiles = filteredFiles.map(async (file) => {
             const filePath = file.filepath as string;
