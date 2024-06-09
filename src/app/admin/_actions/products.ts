@@ -2,7 +2,6 @@
 
 import db from "@/db/db";
 import { z } from "zod";
-import fs from "fs/promises";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -64,20 +63,24 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     const colours = JSON.parse(data.colours);
     const categories = JSON.parse(data.categories);
 
-    await fs.mkdir("products", { recursive: true });
-    const filePath = `products/${crypto.randomUUID()}-${data.file.name}`;
-    await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()));
+    const uploadFile = async (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
 
-    await fs.mkdir("public/products", { recursive: true });
-    const imagePaths = [];
-    for (const image of images) {
-        const imagePath = `/products/${crypto.randomUUID()}-${image.name}`;
-        await fs.writeFile(
-            `public${imagePath}`,
-            Buffer.from(await image.arrayBuffer())
-        );
-        imagePaths.push(imagePath);
-    }
+        const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!res.ok) {
+            throw new Error("Error uploading file to S3");
+        }
+
+        const { url } = await res.json();
+        return url;
+    };
+
+    const imageUrls = await Promise.all(images.map(uploadFile));
 
     const product = await db.product.create({
         data: {
@@ -89,7 +92,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
             lengthInMm: data.lengthInMm ?? null,
             widthInMm: data.widthInMm ?? null,
             heightInMm: data.heightInMm ?? null,
-            filePath,
+            filePath: await uploadFile(data.file),
         },
     });
 
@@ -111,10 +114,10 @@ export async function addProduct(prevState: unknown, formData: FormData) {
         });
     }
 
-    for (const imagePath of imagePaths) {
+    for (const imageUrl of imageUrls) {
         await db.image.create({
             data: {
-                url: imagePath,
+                url: imageUrl,
                 productId: product.id,
             },
         });
@@ -167,33 +170,35 @@ export async function updateProduct(
 
     if (product == null) return notFound();
 
+    const uploadFile = async (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!res.ok) {
+            throw new Error("Error uploading file to S3");
+        }
+
+        const { url } = await res.json();
+        return url;
+    };
+
     let filePath = product.filePath;
     if (data.file != null && data.file.size > 0) {
-        await fs.unlink(product.filePath);
-        filePath = `products/${crypto.randomUUID()}-${data.file.name}`;
-        await fs.writeFile(
-            filePath,
-            Buffer.from(await data.file.arrayBuffer())
-        );
+        filePath = await uploadFile(data.file);
     }
 
-    const imagePaths = [];
+    const imageUrls = [];
     if (images.length > 0) {
-        const existingImages = await db.image.findMany({
-            where: { productId: id },
-        });
-        for (const image of existingImages) {
-            await fs.unlink(`public${image.url}`);
-        }
         await db.image.deleteMany({ where: { productId: id } });
 
         for (const image of images) {
-            const imagePath = `/products/${crypto.randomUUID()}-${image.name}`;
-            await fs.writeFile(
-                `public${imagePath}`,
-                Buffer.from(await image.arrayBuffer())
-            );
-            imagePaths.push(imagePath);
+            const imageUrl = await uploadFile(image);
+            imageUrls.push(imageUrl);
         }
     }
 
@@ -231,10 +236,10 @@ export async function updateProduct(
         });
     }
 
-    for (const imagePath of imagePaths) {
+    for (const imageUrl of imageUrls) {
         await db.image.create({
             data: {
-                url: imagePath,
+                url: imageUrl,
                 productId: id,
             },
         });
@@ -270,12 +275,6 @@ export async function deleteProduct(id: string) {
     });
 
     if (product == null) return notFound();
-
-    await fs.unlink(product.filePath);
-
-    for (const image of product.images) {
-        await fs.unlink(`public${image.url}`);
-    }
 
     await db.product.delete({ where: { id } });
 
