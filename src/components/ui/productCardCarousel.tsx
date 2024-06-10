@@ -14,7 +14,7 @@ const Carousel = ({ images }: CarouselProps) => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
         intervalRef.current = setInterval(() => {
             setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-        }, 3000);
+        }, 2000);
     };
 
     const stopCarousel = () => {

@@ -20,7 +20,10 @@ const config = {
         },
         extend: {
             fontFamily: {
-                sans: ["var(--font-sans)", ...fontFamily.sans],
+                sans: ["var(--font-roboto)", ...fontFamily.sans],
+            },
+            fontWeight: {
+                semibold: "450",
             },
             height: {
                 "112": "28rem",
@@ -62,8 +65,11 @@ const config = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                heading: "hsl(var(--heading-color))",
+                text: "hsl(var(--text-color))",
             },
             borderRadius: {
+                xl: "calc(var(--radius) + 5px)",
                 lg: "var(--radius)",
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",

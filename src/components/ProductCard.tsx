@@ -33,15 +33,12 @@ export function ProductCard({
                     <Carousel images={images} />
                 </div>
             </Link>
-            <CardHeader>
-                <CardTitle>{name}</CardTitle>
-                <CardDescription>
+            <CardHeader className="flex flex-col items-center justify-center text-center text-heading">
+                <CardTitle className="font-semibold">{name}</CardTitle>
+                <CardDescription className="pt-2 text-text">
                     {`£${(priceInPence / 100).toFixed(2)}`}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow">
-                <p className="line-clamp-3">{description}</p>
-            </CardContent>
         </Card>
     );
 }
@@ -50,11 +47,11 @@ export function ProductCardSkeleton() {
     return (
         <Card className="overflow-hidden flex flex-col animate-pulse h-full">
             <div className="relative w-full pb-[100%] bg-gray-300" />
-            <CardHeader>
-                <CardTitle>
+            <CardHeader className="flex flex-col items-center justify-center text-center text-heading">
+                <CardTitle className="font-semibold">
                     <div className="w-3/4 h-6 rounded-full bg-gray-300" />
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="pt-2 text-text">
                     <div className="w-1/2 h-4 rounded-full bg-gray-300" />
                 </CardDescription>
             </CardHeader>
