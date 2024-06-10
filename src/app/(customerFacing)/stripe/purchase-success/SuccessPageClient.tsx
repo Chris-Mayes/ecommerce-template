@@ -31,7 +31,6 @@ export default function SuccessPageClient({
 
     useEffect(() => {
         if (isSuccess && !cartCleared) {
-            console.log("Clearing cart...");
             clearCart();
             setCartCleared(true);
         }

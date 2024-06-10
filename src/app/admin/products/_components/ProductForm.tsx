@@ -172,15 +172,12 @@ export function ProductForm({
             }
 
             const data = await res.json();
-            console.log("Image URLs from API:", data.urls);
 
             formData.delete("images");
             const imageUrls = JSON.stringify(data.urls);
             formData.append("imageUrls", imageUrls);
 
-            formData.forEach((value, key) => {
-                console.log(`Key: ${key}, Value: ${value}`);
-            });
+            formData.forEach((value, key) => {});
 
             action(formData);
         } catch (error) {
@@ -310,7 +307,7 @@ export function ProductForm({
                     </div>
                 )}
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
                 <Label htmlFor="file">File - Optional</Label>
                 <Input type="file" id="file" name="file" required={false} />
                 {product != null && (
@@ -323,7 +320,7 @@ export function ProductForm({
                         {error.file.join(", ")}
                     </div>
                 )}
-            </div>
+            </div> */}
             <div className="space-y-2">
                 <Label htmlFor="images">Images - Required</Label>
                 <div {...getRootProps({ className: "dropzone" })}>
