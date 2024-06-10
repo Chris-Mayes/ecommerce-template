@@ -23,7 +23,11 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    const form = new IncomingForm();
+    const form = new IncomingForm({
+        keepExtensions: true,
+        allowEmptyFiles: true,
+        multiples: true,
+    });
 
     form.parse(req, async (err, fields, files) => {
         if (err) {
