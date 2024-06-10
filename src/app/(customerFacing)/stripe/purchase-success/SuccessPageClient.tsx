@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -27,13 +27,15 @@ export default function SuccessPageClient({
     isSuccess,
 }: SuccessPageClientProps) {
     const { clearCart } = useCart();
+    const [cartCleared, setCartCleared] = useState(false);
 
     useEffect(() => {
-        if (isSuccess) {
+        if (isSuccess && !cartCleared) {
             console.log("Clearing cart...");
             clearCart();
+            setCartCleared(true);
         }
-    }, [isSuccess, clearCart]);
+    }, [isSuccess, clearCart, cartCleared]);
 
     const totalPrice = useMemo(() => {
         return products.reduce((total, item) => {

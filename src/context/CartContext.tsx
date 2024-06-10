@@ -6,6 +6,7 @@ import {
     useState,
     ReactNode,
     useEffect,
+    useCallback,
 } from "react";
 
 interface CartItem {
@@ -44,7 +45,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem("cart", JSON.stringify(cart));
     }, [cart]);
 
-    const addToCart = (item: CartItem) => {
+    const addToCart = useCallback((item: CartItem) => {
         setCart((prevCart) => {
             const existingItem = prevCart.find(
                 (i) =>
@@ -59,35 +60,34 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             }
             return [...prevCart, item];
         });
-    };
+    }, []);
 
-    const removeFromCart = (productId: string, colour: string) => {
+    const removeFromCart = useCallback((productId: string, colour: string) => {
         setCart((prevCart) =>
             prevCart.filter(
                 (item) =>
                     !(item.productId === productId && item.colour === colour)
             )
         );
-    };
+    }, []);
 
-    const updateCartItemQuantity = (
-        productId: string,
-        colour: string,
-        quantity: number
-    ) => {
-        setCart((prevCart) =>
-            prevCart.map((item) =>
-                item.productId === productId && item.colour === colour
-                    ? { ...item, quantity }
-                    : item
-            )
-        );
-    };
+    const updateCartItemQuantity = useCallback(
+        (productId: string, colour: string, quantity: number) => {
+            setCart((prevCart) =>
+                prevCart.map((item) =>
+                    item.productId === productId && item.colour === colour
+                        ? { ...item, quantity }
+                        : item
+                )
+            );
+        },
+        []
+    );
 
-    const clearCart = () => {
+    const clearCart = useCallback(() => {
         setCart([]);
         localStorage.removeItem("cart");
-    };
+    }, []);
 
     return (
         <CartContext.Provider
