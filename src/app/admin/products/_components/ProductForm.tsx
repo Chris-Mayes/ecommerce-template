@@ -154,6 +154,11 @@ export function ProductForm({
             formData.append("categories", JSON.stringify([categories]));
         }
 
+        if (images.length === 0 && !product?.filePath) {
+            console.error("File is required");
+            return;
+        }
+
         try {
             const res = await fetch("/api/upload", {
                 method: "POST",

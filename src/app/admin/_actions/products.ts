@@ -5,7 +5,7 @@ import { z } from "zod";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-const fileSchema = z.instanceof(File, { message: "Required" }).optional();
+const fileSchema = z.instanceof(File).optional();
 
 const addSchema = z.object({
     name: z.string().min(1),
