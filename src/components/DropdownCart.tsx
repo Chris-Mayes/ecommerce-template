@@ -133,7 +133,7 @@ export default function DropdownCart() {
     if (!isClient) return null;
 
     return (
-        <div className="fixed top-16 right-12 z-50 dropdown-container">
+        <div className="fixed top-28 right-12 z-50 dropdown-container">
             <div className="relative flex items-center">
                 <button
                     ref={buttonRef}
@@ -142,7 +142,7 @@ export default function DropdownCart() {
                 >
                     <FontAwesomeIcon
                         icon={faShoppingBag}
-                        className="mr-4 mt-2 custom-icon-size"
+                        className="mr-3 mt-2 custom-icon-size"
                     />
                     {getTotalItemCount() > 0 && (
                         <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary-red text-white text-sm rounded-full flex items-center justify-center">

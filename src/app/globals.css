@@ -19,7 +19,9 @@
         --popover-foreground: 222.2 84% 4.9%;
 
         /* banner/buttons */
-        --primary: 233 78% 88%;
+        --primary: 25 11% 30%;
+        /* hsl(125, 7%, 32%) */
+        /* --primary: 233 78% 88%; */
         --primary-foreground: 210 40% 98%;
 
         --primary-hover: 233 78% 78%;
@@ -115,10 +117,9 @@ button {
 
 .nav-banner {
     position: relative;
-    height: 16rem;
+    height: 5rem;
     display: flex;
-    align-items: flex-start;
-    padding: 0 1rem;
+    align-items: center;
 }
 
 .negative-mt-2 {

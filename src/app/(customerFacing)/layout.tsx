@@ -10,8 +10,10 @@ export default function Layout({
     return (
         <>
             <Nav>
-                <NavLink href="/">Home</NavLink>
-                <NavLink href="/products">Products</NavLink>
+                <NavLink href="/products">Shop</NavLink>
+                <NavLink href="/">Explore</NavLink>
+                {/* <NavLink href="/products">Home</NavLink> */}
+                {/* <NavLink href="/products">Products</NavLink> */}
             </Nav>
             <div className="container my-6">{children}</div>
         </>
