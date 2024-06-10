@@ -30,6 +30,7 @@ export default function SuccessPageClient({
 
     useEffect(() => {
         if (isSuccess) {
+            console.log("Clearing cart...");
             clearCart();
         }
     }, [isSuccess, clearCart]);
@@ -74,17 +75,18 @@ export default function SuccessPageClient({
             <div className="text-lg font-bold">
                 {`Total: £${(totalPrice / 100).toFixed(2)}`}
             </div>
-            <div className="">
+            <div>
                 {isSuccess && (
-                    <Link
-                        href="/products"
-                        className="flex items-center text-black"
-                    >
-                        <span className="align-middle">Continue Shopping</span>
-                        <FontAwesomeIcon
-                            icon={faArrowRight}
-                            className="ml-2 w-6 h-6"
-                        />
+                    <Link href="/products" passHref>
+                        <a className="flex items-center text-black">
+                            <span className="align-middle">
+                                Continue Shopping
+                            </span>
+                            <FontAwesomeIcon
+                                icon={faArrowRight}
+                                className="ml-2 w-6"
+                            />
+                        </a>
                     </Link>
                 )}
             </div>
