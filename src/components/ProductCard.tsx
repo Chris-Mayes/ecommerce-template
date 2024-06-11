@@ -34,7 +34,7 @@ export function ProductCard({
                 </div>
             </Link>
             <CardHeader className="flex flex-col items-center justify-center text-center text-heading">
-                <CardTitle className="font-semibold">{name}</CardTitle>
+                <CardTitle className="font-semibold pt-2">{name}</CardTitle>
                 <CardDescription className="pt-2 text-text">
                     {`£${(priceInPence / 100).toFixed(2)}`}
                 </CardDescription>

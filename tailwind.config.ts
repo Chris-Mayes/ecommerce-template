@@ -20,10 +20,10 @@ const config = {
         },
         extend: {
             fontFamily: {
-                sans: ["var(--font-roboto)", ...fontFamily.sans],
+                sans: ["var(--font-montserrat)", ...fontFamily.sans],
             },
             fontWeight: {
-                semibold: "450",
+                semibold: "500",
             },
             fontSize: {
                 "sm-plus": "0.875rem",
