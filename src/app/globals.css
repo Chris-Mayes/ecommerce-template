@@ -24,7 +24,8 @@
         --primary-hover: 85 32% 35%;
         --primary-buttons: 85 32% 21%;
 
-        --primary-red: 12 90% 60%;
+        /* quantity counter, alerts */
+        --secondary-colour: 28, 45%, 38%;
 
         --secondary: 210 40% 96.1%;
         --secondary-foreground: 222.2 47.4% 11.2%;

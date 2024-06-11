@@ -145,7 +145,7 @@ export default function DropdownCart() {
                         className="mr-3 mt-2 custom-icon-size"
                     />
                     {getTotalItemCount() > 0 && (
-                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary-red text-white text-sm rounded-full flex items-center justify-center">
+                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary-secondaryColour text-white text-sm rounded-full flex items-center justify-center">
                             {getTotalItemCount()}
                         </div>
                     )}
@@ -211,7 +211,7 @@ export default function DropdownCart() {
                                                         <div className="flex items-center mt-2 relative">
                                                             {alertMessage?.itemKey ===
                                                                 itemKey && (
-                                                                <div className="alert-message absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 p-2 bg-primary-red text-white text-xs rounded-md shadow-lg">
+                                                                <div className="alert-message absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 p-2 bg-primary-secondaryColour text-white text-xs rounded-md shadow-lg">
                                                                     {
                                                                         alertMessage.message
                                                                     }
@@ -259,7 +259,7 @@ export default function DropdownCart() {
                                                                         item.colour
                                                                     )
                                                                 }
-                                                                className="ml-2 text-primary-red text-sm"
+                                                                className="ml-2 text-primary-secondaryColour text-sm"
                                                             >
                                                                 <FontAwesomeIcon
                                                                     icon={
