@@ -25,6 +25,9 @@ const config = {
             fontWeight: {
                 semibold: "450",
             },
+            fontSize: {
+                "sm-plus": "0.875rem",
+            },
             height: {
                 "112": "28rem",
             },
