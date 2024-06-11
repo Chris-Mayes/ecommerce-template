@@ -142,7 +142,7 @@ export default function DropdownCart() {
                 >
                     <FontAwesomeIcon
                         icon={faShoppingBag}
-                        className="mr-3 mt-2 custom-icon-size"
+                        className="mr-4 mt-2 custom-icon-size"
                     />
                     {getTotalItemCount() > 0 && (
                         <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary-secondaryColour text-white text-sm-plus rounded-full flex items-center justify-center">
