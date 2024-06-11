@@ -7,8 +7,7 @@
     :root {
         --background: 0 0% 100%;
         --foreground: 222.2 1% 4.9%;
-        /* --heading-color: 222.2 84% 4.9%;
-        --text-color: 215.4 16.3% 46.9%; */
+
         --heading-color: 215.4 16.3% 15%;
         --text-color: 222.2 84% 4.9%;
 
@@ -19,13 +18,11 @@
         --popover-foreground: 222.2 84% 4.9%;
 
         /* banner/buttons */
-        --primary: 25 11% 30%;
-        /* hsl(125, 7%, 32%) */
-        /* --primary: 233 78% 88%; */
+        --primary: 85 32% 21%;
         --primary-foreground: 210 40% 98%;
 
-        --primary-hover: 25 11% 55%;
-        --primary-buttons: 25 11% 35%;
+        --primary-hover: 85 32% 35%;
+        --primary-buttons: 85 32% 21%;
 
         --primary-red: 12 90% 60%;
 
@@ -140,7 +137,6 @@ input[type="number"] {
     font-size: 1.3rem;
 }
 
-/* Truncate product name with ellipsis if too long */
 .product-name-container {
     position: relative;
     width: 60%;
@@ -155,7 +151,6 @@ input[type="number"] {
     max-width: 100%;
 }
 
-/* Ensure alert message wraps onto multiple lines */
 .alert-message {
     max-width: 90%;
     word-break: break-word;
@@ -167,10 +162,14 @@ input[type="number"] {
     scrollbar-width: none; /* Firefox */
 }
 
+.nav-link-dot {
+    transition: transform 0.3s ease-in-out;
+}
+
 @media (max-width: 768px) {
     .dropdown-cart {
         position: fixed;
-        top: 6rem;
+        top: 8.5rem;
         width: 90%;
         max-width: 400px;
         left: 48%;
