@@ -154,7 +154,7 @@ export function ProductForm({
             formData.append("categories", JSON.stringify([categories]));
         }
 
-        if (images.length === 0 && !product?.filePath) {
+        if (images.length === 0 && imagePreviews.length === 0) {
             console.error("File is required");
             return;
         }
@@ -174,8 +174,9 @@ export function ProductForm({
             const data = await res.json();
 
             formData.delete("images");
-            const imageUrls = JSON.stringify(data.urls);
+            const imageUrls = JSON.stringify(data.urls.concat(imagePreviews));
             formData.append("imageUrls", imageUrls);
+            formData.append("existingImageUrls", JSON.stringify(imagePreviews));
 
             formData.forEach((value, key) => {});
 

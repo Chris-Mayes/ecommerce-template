@@ -16,10 +16,35 @@ export default async function EditProductPage({
         },
     });
 
+    const productWithColoursAndCategories = product
+        ? {
+              ...product,
+              colours: product.colours.map((c) => ({
+                  id: c.id,
+                  globalColour: {
+                      id: c.globalColour.id,
+                      name: c.globalColour.name,
+                  },
+              })),
+              categories: product.categories.map((c) => ({
+                  id: c.id,
+                  globalCategory: {
+                      id: c.globalCategory.id,
+                      name: c.globalCategory.name,
+                  },
+              })),
+              images: product.images.map((i) => ({
+                  id: i.id,
+                  url: i.url,
+                  productId: i.productId,
+              })),
+          }
+        : null;
+
     return (
         <>
             <PageHeader>Edit Product</PageHeader>
-            <ProductForm product={product} />
+            <ProductForm product={productWithColoursAndCategories} />
         </>
     );
 }

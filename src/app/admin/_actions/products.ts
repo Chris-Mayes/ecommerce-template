@@ -110,8 +110,16 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 }
 
 const editSchema = addSchema.extend({
-    file: fileSchema,
+    file: fileSchema.optional(),
     images: z.array(fileSchema).optional(),
+    existingImageUrls: z.string().refine((val) => {
+        try {
+            JSON.parse(val);
+            return Array.isArray(JSON.parse(val));
+        } catch {
+            return false;
+        }
+    }, "Invalid existingImageUrls format"),
 });
 
 export async function updateProduct(
@@ -129,7 +137,8 @@ export async function updateProduct(
     const data = result.data;
     const colours = JSON.parse(data.colours);
     const categories = JSON.parse(data.categories);
-    const imageUrls = JSON.parse(data.imageUrls);
+    const imageUrls: string[] = JSON.parse(data.imageUrls);
+    const existingImageUrls: string[] = JSON.parse(data.existingImageUrls);
     const product = await db.product.findUnique({ where: { id } });
 
     if (product == null) return notFound();
@@ -144,7 +153,7 @@ export async function updateProduct(
             lengthInMm: data.lengthInMm ?? null,
             widthInMm: data.widthInMm ?? null,
             heightInMm: data.heightInMm ?? null,
-            filePath: data.file?.name || product.filePath,
+            filePath: data.file?.name || "",
         },
     });
 
@@ -169,8 +178,10 @@ export async function updateProduct(
     }
 
     if (imageUrls) {
-        await db.image.deleteMany({ where: { productId: id } });
-        for (const imageUrl of imageUrls) {
+        const newImageUrls = imageUrls.filter(
+            (url: string) => !existingImageUrls.includes(url)
+        );
+        for (const imageUrl of newImageUrls) {
             await db.image.create({
                 data: {
                     url: imageUrl,
