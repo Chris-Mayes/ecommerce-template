@@ -75,6 +75,7 @@ export function ProductForm({
     const [imagePreviews, setImagePreviews] = useState<string[]>(
         product?.images?.map((image) => image.url) || []
     );
+    const [imagesToRemove, setImagesToRemove] = useState<string[]>([]);
 
     const [availableColours, setAvailableColours] = useState<
         { value: string; label: string }[]
@@ -134,6 +135,17 @@ export function ProductForm({
         setImagePreviews((prev) => [...prev, ...newPreviews]);
     }, []);
 
+    const handleRemoveImage = (index: number, isNewImage: boolean) => {
+        if (isNewImage) {
+            setImages((prev) => prev.filter((_, i) => i !== index));
+            setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+        } else {
+            const urlToRemove = imagePreviews[index];
+            setImagesToRemove((prev) => [...prev, urlToRemove]);
+            setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+        }
+    };
+
     const { getRootProps, getInputProps } = useDropzone({
         onDrop,
         accept: {
@@ -154,11 +166,6 @@ export function ProductForm({
             formData.append("categories", JSON.stringify([categories]));
         }
 
-        if (images.length === 0 && imagePreviews.length === 0) {
-            console.error("File is required");
-            return;
-        }
-
         try {
             const res = await fetch("/api/upload", {
                 method: "POST",
@@ -174,11 +181,10 @@ export function ProductForm({
             const data = await res.json();
 
             formData.delete("images");
-            const imageUrls = JSON.stringify(data.urls.concat(imagePreviews));
+            const imageUrls = JSON.stringify(data.urls); // Only use new image URLs
             formData.append("imageUrls", imageUrls);
-            formData.append("existingImageUrls", JSON.stringify(imagePreviews));
-
-            formData.forEach((value, key) => {});
+            formData.append("existingImageUrls", JSON.stringify(imagePreviews)); // Correctly append existing image previews
+            formData.append("imagesToRemove", JSON.stringify(imagesToRemove)); // Add imagesToRemove to the form
 
             action(formData);
         } catch (error) {
@@ -308,20 +314,6 @@ export function ProductForm({
                     </div>
                 )}
             </div>
-            {/* <div className="space-y-2">
-                <Label htmlFor="file">File - Optional</Label>
-                <Input type="file" id="file" name="file" required={false} />
-                {product != null && (
-                    <div className="text-muted-foreground">
-                        {product.filePath}
-                    </div>
-                )}
-                {error?.file && (
-                    <div className="text-destructive">
-                        {error.file.join(", ")}
-                    </div>
-                )}
-            </div> */}
             <div className="space-y-2">
                 <Label htmlFor="images">Images - Required</Label>
                 <div {...getRootProps({ className: "dropzone" })}>
@@ -330,14 +322,27 @@ export function ProductForm({
                 </div>
                 <div className="flex space-x-2 mt-2">
                     {imagePreviews.map((src, index) => (
-                        <Image
-                            key={index}
-                            src={src}
-                            height={100}
-                            width={100}
-                            alt="Product Image Preview"
-                            className="border p-1"
-                        />
+                        <div key={index} className="relative">
+                            <Image
+                                src={src}
+                                height={100}
+                                width={100}
+                                alt="Product Image Preview"
+                                className="border p-1"
+                            />
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    handleRemoveImage(
+                                        index,
+                                        !src.startsWith("https")
+                                    )
+                                }
+                                className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded"
+                            >
+                                X
+                            </button>
+                        </div>
                     ))}
                 </div>
                 {error?.images && (

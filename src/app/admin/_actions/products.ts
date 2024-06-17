@@ -4,6 +4,13 @@ import db from "@/db/db";
 import { z } from "zod";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import AWS from "aws-sdk";
+
+const s3 = new AWS.S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION,
+});
 
 const fileSchema = z.instanceof(File).optional();
 
@@ -40,6 +47,18 @@ const addSchema = z.object({
             return false;
         }
     }, "Invalid imageUrls format"),
+    imagesToRemove: z
+        .string()
+        .optional()
+        .refine((val) => {
+            if (val === undefined) return true;
+            try {
+                JSON.parse(val);
+                return Array.isArray(JSON.parse(val));
+            } catch {
+                return false;
+            }
+        }, "Invalid imagesToRemove format"),
 });
 
 export async function addProduct(prevState: unknown, formData: FormData) {
@@ -139,6 +158,8 @@ export async function updateProduct(
     const categories = JSON.parse(data.categories);
     const imageUrls: string[] = JSON.parse(data.imageUrls);
     const existingImageUrls: string[] = JSON.parse(data.existingImageUrls);
+    const imagesToRemove: string[] = JSON.parse(data.imagesToRemove || "[]");
+
     const product = await db.product.findUnique({ where: { id } });
 
     if (product == null) return notFound();
@@ -177,18 +198,43 @@ export async function updateProduct(
         });
     }
 
-    if (imageUrls) {
-        const newImageUrls = imageUrls.filter(
-            (url: string) => !existingImageUrls.includes(url)
-        );
-        for (const imageUrl of newImageUrls) {
-            await db.image.create({
-                data: {
-                    url: imageUrl,
-                    productId: id,
-                },
-            });
+    const currentImages = await db.image.findMany({
+        where: { productId: id },
+    });
+
+    const currentImageUrls = currentImages.map((image) => image.url);
+
+    const imageUrlsToDelete = currentImageUrls.filter((url) =>
+        imagesToRemove.includes(url)
+    );
+
+    await db.image.deleteMany({
+        where: { url: { in: imageUrlsToDelete }, productId: id },
+    });
+
+    for (const url of imageUrlsToDelete) {
+        const key = url.split("/").pop(); // Assuming the key is the last part of the URL
+        if (key) {
+            await s3
+                .deleteObject({
+                    Bucket: process.env.AWS_BUCKET_NAME!,
+                    Key: key,
+                })
+                .promise();
         }
+    }
+
+    const newImageUrls = imageUrls.filter(
+        (url) => !currentImageUrls.includes(url)
+    );
+
+    for (const imageUrl of newImageUrls) {
+        await db.image.create({
+            data: {
+                url: imageUrl,
+                productId: id,
+            },
+        });
     }
 
     revalidatePath("/");
