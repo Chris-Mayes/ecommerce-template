@@ -78,16 +78,15 @@ export default function SuccessPageClient({
             </div>
             <div>
                 {isSuccess && (
-                    <Link href="/products" passHref>
-                        <a className="flex items-center text-black">
-                            <span className="align-middle">
-                                Continue Shopping
-                            </span>
-                            <FontAwesomeIcon
-                                icon={faArrowRight}
-                                className="ml-2 w-6"
-                            />
-                        </a>
+                    <Link
+                        href="/products"
+                        className="flex items-center text-black"
+                    >
+                        <span className="align-middle">Continue Shopping</span>
+                        <FontAwesomeIcon
+                            icon={faArrowRight}
+                            className="ml-2 w-6"
+                        />
                     </Link>
                 )}
             </div>
